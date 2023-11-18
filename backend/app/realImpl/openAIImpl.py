@@ -5,13 +5,13 @@ from base64 import b64encode
 from typing import Union, Tuple, Any
 
 class OpenAIImpl(OpenAIInterface):
-    PROMPT_PRICE_1K = 0.01
-    OUTPUT_PRICE_1K = 0.03
+    _PROMPT_PRICE_1K = 0.01
+    _OUTPUT_PRICE_1K = 0.03
     
-    client = OpenAI()
+    _client = OpenAI()
 
     @staticmethod
-    def encode_image(image_file: bytes):
+    def _encode_image(image_file: bytes):
         return b64encode(image_file).decode("utf-8")
     
     """
@@ -20,8 +20,8 @@ class OpenAIImpl(OpenAIInterface):
     """
     @staticmethod
     def calculate_price(response: ChatCompletion) -> float:
-        prompt_cost = response.usage['prompt_tokens'] * OpenAIImpl.PROMPT_PRICE_1K / 1000.0
-        output_cost = response.usage['completion_tokens'] * OpenAIImpl.OUTPUT_PRICE_1K / 1000.0
+        prompt_cost = response.usage['prompt_tokens'] * OpenAIImpl._PROMPT_PRICE_1K / 1000.0
+        output_cost = response.usage['completion_tokens'] * OpenAIImpl._OUTPUT_PRICE_1K / 1000.0
 
         return output_cost + prompt_cost
 
@@ -35,16 +35,18 @@ class OpenAIImpl(OpenAIInterface):
             HIGH: It will first pass a 512x512 rescaled image, and then, the individual tiles of 512x512.
             LOW: It will rescale and pass only a single time as a 512x512 image.
     """
-    def send_GPT4V_instruction(self, image: Union[bytes,str], instruction: str, detail: Detail) -> Tuple[float, Any]:
-        if image is not None:
+    def send_GPT4V_instruction(self, image: Union[bytes,str], instruction: str, detail: Detail = Detail.LOW) -> Tuple[float, Any]:
+        if image is not None and instruction is not None:
             if isinstance(image, bytes):
-                image_url = f"data:image/jpeg;base64,{OpenAIImpl.encode_image(image)}"
+                image_url = f"data:image/jpeg;base64,{OpenAIImpl._encode_image(image)}"
             elif isinstance(image, str):
                 image_url = image
             else:
                 raise TypeError("image must be bytes or str")
+        else:
+            return
 
-        response = self.client.chat.completions.create(
+        response = self._client.chat.completions.create(
                         model="gpt-4-vision-preview",
                         messages=[
                             {
