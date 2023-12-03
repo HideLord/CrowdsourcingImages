@@ -109,6 +109,10 @@
     border-radius: 4px;
 }
 
+.send-button:disabled {
+    background-color: gray;
+}
+
 .max-tokens {
     margin-left: 10px;
     width: 50px;
