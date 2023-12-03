@@ -17,7 +17,7 @@
 
 .rounded-corners:focus {
     border-color: #007BFF;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
 }
 
 .margin {
@@ -30,10 +30,14 @@
     margin-right: 10px;
 }
 
+.margin-left {
+    margin-left: 5px;
+}
+
 .textarea {
     display: block;
     max-width: 100%;
-    height: 30vh;
+    height: 25vh;
     padding: 10px;
     font-size: 1.2em;
     resize: none;
@@ -56,11 +60,6 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
-}
-
-.overflow-div {
-    flex-grow: 1;
-    overflow: auto;
 }
 
 .image-preview-container {
@@ -95,4 +94,22 @@
     background-color: rgba(0, 0, 0, 0.5);
     padding: 10px;
     border-radius: 5px;
+}
+
+.send-button {
+    background-color: #4465d1;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.max-tokens {
+    margin-left: 10px;
+    width: 50px;
 }
