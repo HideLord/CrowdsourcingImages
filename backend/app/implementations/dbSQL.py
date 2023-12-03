@@ -1,5 +1,5 @@
 from interfaces.dbInterface import DBInterface
-from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer
+from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from json import dumps
@@ -13,8 +13,10 @@ class SQLDatabase(DBInterface):
 
         metadata = MetaData()
 
-        self.pairs_table = Table('pairs', metadata, autoload_with=self.engine)
-        if not self.pairs_table.exists(): # Not exactly thread-safe, but the SQL underneath should be.
+        ins = inspect(self.engine)
+        if ins.has_table('pairs'):
+            self.pairs_table = Table('pairs', metadata, autoload_with=self.engine)
+        else: # Not exactly thread-safe, but the SQL underneath should be.
             self.pairs_table = Table('pairs', metadata,
                                      Column('pk', Integer, primary_key=True, autoincrement=True),
                                      Column('image_url', String),

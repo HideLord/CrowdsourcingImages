@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import {Detail, getGPT4Vpayload, sendGPT4VInstruction} from '../../utils/openAi'
-
+import {storePair} from '../../utils/dbUtil'
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -46,6 +46,18 @@ function CheckBox({ checked, onChange, label }) {
     )
 }
 
+function createStorePairData(instruction, highRes, response) {
+    let data = {};
+    data.type = 'instruction';
+    data.instruction = instruction;
+    data.detail = highRes? Detail.HIGH : Detail.LOW;
+    data.response = response.choices[0].message.content;
+    data.promptTokens = response.usage.prompt_tokens;
+    data.completionTokens = response.usage.completion_tokens;
+
+    return data;
+}
+
 function SendButton( {isSendDisabled, setSendDisabled, apiKey, imageUrl, instruction, highRes, setResponse} ) {
     return (
         <button 
@@ -54,9 +66,12 @@ function SendButton( {isSendDisabled, setSendDisabled, apiKey, imageUrl, instruc
             onClick={() => { 
                 setSendDisabled(true);
                 sendGPT4VInstruction(apiKey, imageUrl, instruction, highRes? Detail.HIGH : Detail.LOW)
-                    .then((result) => {
-                        setResponse(JSON.stringify(result, null, 4));
+                    .then((response) => {
+                        setResponse(JSON.stringify(response, null, 4));
                         setSendDisabled(false);
+
+                        let data = createStorePairData(instruction, highRes, response);
+                        storePair(imageUrl, data);
                     })
                     .catch(async (error) => {
                         console.error("Error occurred in sendGPT4VInstruction:", error);

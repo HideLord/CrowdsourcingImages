@@ -1,5 +1,9 @@
-# venv
+# backend
 backend/venv
+backend/app/__pycache__
+backend/app/implementations/__pycache__
+backend/app/interfaces/__pycache__
+backend/test_db
 
-# dependencies
+# frontend
 frontend/node_modules/

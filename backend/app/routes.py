@@ -18,16 +18,18 @@ def store_pair():
         # This needs to be imported inside the request context.
         from flask import current_app
     
-        image_url = request.form['image_url']
-        json = request.form['data']
+        json_data = request.get_json()
 
-        db = current_app.config['db']
-        db.store_pair(image_url, json)
+        image_url = json_data['image_url']
+        data = json_data['data']
+
+        db = current_app.config['images_db']
+        db.store_pair(image_url, data)
 
         return "Pair stored successfully", 200
-    
+
     except BadRequest as e:
         return str(e), 400
-    
+
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
