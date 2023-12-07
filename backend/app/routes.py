@@ -1,9 +1,9 @@
-from flask import Blueprint, request, jsonify, url_for, make_response
+from flask import Blueprint, request, jsonify, url_for, redirect, session
 from flask_limiter import Limiter
 from werkzeug.exceptions import BadRequest
 from flask_limiter.util import get_remote_address
 
-from tempStorage import otps, session_id_to_mail
+from tempStorage import otps
 
 import secrets
 import urllib
@@ -49,6 +49,8 @@ def generate_otp():
     from flask import current_app
 
     email = request.json.get("email")
+    link = request.json.get("link")
+
     if not email:
         return "Email is required", 400
     
@@ -56,36 +58,31 @@ def generate_otp():
     otps[otp] = email # store the otp -> email pair 
     
     login_url = url_for("routes.login", _external=True)
-    login_url += f"?otp={otp}&email={urllib.parse.quote(email)}" # query params otp and email
+    login_url += f"?otp={otp}&email={urllib.parse.quote(email)}&link={urllib.parse.quote(link)}" # query params otp and email
 
-    current_app.config["email_server"].send_email("Your OTP", [email], login_url) # Send login link
+    current_app.config["email_server"].send_email("Your OTP", [email], "Click here to login:\n" + login_url) # Send login link
 
     return "OTP has been sent to your email", 200
 
 
-@bp.route("/login", methods=["POST"])
+@bp.route("/login", methods=["GET"])
 def login():
     otp = request.args.get("otp")
     email = request.args.get("email")
+    link = request.args.get("link")
 
-    if otp in otps and otps[otp] == email:
-        session_id = secrets.token_hex(16)  # Create the session id
-        session_id_to_mail[session_id] = email
-        
-        response = make_response({"session_id": session_id})
-        response.set_cookie("email", email) # Set the mail as a cookie so it can be verified later
+    if otp and otp in otps and otps[otp] == email:
+        session['email'] = email  # Store the email in session
 
-        return response
+        return redirect(link)
     else:
         return "Invalid OTP", 400
-    
+
 
 def is_authenticated():
-    session_id = request.headers.get("Authorization")
-    email = request.cookies.get("email")
+    email = session.get("email")
 
-    if not session_id or session_id not in session_id_to_mail:
+    if not email:
         return False
-
-    session_mail = session_id_to_mail[session_id]
-    return session_mail != email
+    else:
+        return True

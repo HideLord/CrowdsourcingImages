@@ -1,9 +1,10 @@
 import "./Instruction.css";
-import React, { useState } from 'react';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
-import {Detail, getGPT4Vpayload, sendGPT4VInstruction} from '../../utils/openAi'
-import {storePair} from '../../utils/dbUtil'
+import "../../App.css";
+import React, { useState } from "react";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
+import {Detail, getGPT4Vpayload, sendGPT4VInstruction} from "../../utils/openAi"
+import {storePair} from "../../utils/dbUtil"
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -48,7 +49,7 @@ function CheckBox({ checked, onChange, label }) {
 
 function createStorePairData(instruction, highRes, response) {
     let data = {};
-    data.type = 'instruction';
+    data.type = "instruction";
     data.instruction = instruction;
     data.detail = highRes? Detail.HIGH : Detail.LOW;
     data.response = response.choices[0].message.content;
@@ -61,7 +62,7 @@ function createStorePairData(instruction, highRes, response) {
 function SendButton( {isSendDisabled, setSendDisabled, apiKey, imageUrl, instruction, highRes, setResponse} ) {
     return (
         <button 
-            className="send-button margin-no-top"
+            className="blue-button margin-no-top"
             disabled={isSendDisabled}
             onClick={() => { 
                 setSendDisabled(true);
