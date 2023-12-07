@@ -19,7 +19,7 @@ Expects "image_url" and "data" attributes at top level.
 @bp.route("/store_pair", methods=["POST"])
 @limiter.limit("120/minute")
 def store_pair():
-    if not is_authenticated():
+    if not _is_authenticated():
         return "Invalid or expired session token", 401
     
     try:
@@ -77,12 +77,12 @@ def login():
         return redirect(link)
     else:
         return "Invalid OTP", 400
+    
 
-
+@bp.route("/is_authenticated", methods=["GET"])
 def is_authenticated():
-    email = session.get("email")
+    return jsonify({'isAuthenticated': _is_authenticated()}), 200
 
-    if not email:
-        return False
-    else:
-        return True
+
+def _is_authenticated():
+    return bool(session.get("email"))

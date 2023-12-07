@@ -6,8 +6,8 @@ export async function generateOTP(email) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            email: email,
-            link: link,
+            email,
+            link,
         }),
     });
 
@@ -18,4 +18,16 @@ export async function generateOTP(email) {
 
     const result = await response.text();
     return result;
+}
+
+
+export async function isAuthenticated() { 
+    const response = await fetch('http://localhost:5000/is_authenticated', { credentials: 'include' });
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.isAuthenticated;
 }

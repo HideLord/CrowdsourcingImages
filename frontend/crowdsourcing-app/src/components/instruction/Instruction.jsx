@@ -1,19 +1,22 @@
 import "./Instruction.css";
 import "../../App.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Navigate } from 'react-router-dom';
+import ReactLoading from 'react-loading';
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import {Detail, getGPT4Vpayload, sendGPT4VInstruction} from "../../utils/openAi"
-import {storePair} from "../../utils/dbUtil"
+import { Detail, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
+import { storePair } from "../../utils/dbUtil"
+import { isAuthenticated } from "../../utils/loginUtil";
 
 function TextField({ placeholder, value, onChange }) {
     return (
-        <input 
+        <input
             className="rounded-corners margin-no-top"
-            type="text" 
-            placeholder={placeholder} 
-            value={value} 
-            onChange={onChange} 
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
         />
     )
 }
@@ -21,13 +24,13 @@ function TextField({ placeholder, value, onChange }) {
 function MaxTokens({ maxTokens, onChange }) {
     return (
         <label htmlFor="maxTokens" className="margin-no-top">
-            Max Tokens:  
-            <input 
+            Max Tokens:
+            <input
                 className="max-tokens rounded-corners"
                 id="maxTokens"
                 type="number"
-                value={maxTokens} 
-                onChange={onChange} 
+                value={maxTokens}
+                onChange={onChange}
             />
         </label>
     )
@@ -36,11 +39,11 @@ function MaxTokens({ maxTokens, onChange }) {
 function CheckBox({ checked, onChange, label }) {
     return (
         <label>
-            <input 
+            <input
                 className="margin-no-top"
-                type="checkbox" 
-                checked={checked} 
-                onChange={onChange} 
+                type="checkbox"
+                checked={checked}
+                onChange={onChange}
             />
             {label}
         </label>
@@ -51,7 +54,7 @@ function createStorePairData(instruction, highRes, response) {
     let data = {};
     data.type = "instruction";
     data.instruction = instruction;
-    data.detail = highRes? Detail.HIGH : Detail.LOW;
+    data.detail = highRes ? Detail.HIGH : Detail.LOW;
     data.response = response.choices[0].message.content;
     data.promptTokens = response.usage.prompt_tokens;
     data.completionTokens = response.usage.completion_tokens;
@@ -59,14 +62,14 @@ function createStorePairData(instruction, highRes, response) {
     return data;
 }
 
-function SendButton( {isSendDisabled, setSendDisabled, apiKey, imageUrl, instruction, highRes, setResponse} ) {
+function SendButton({ isSendDisabled, setSendDisabled, apiKey, imageUrl, instruction, highRes, setResponse }) {
     return (
-        <button 
+        <button
             className="blue-button margin-no-top"
             disabled={isSendDisabled}
-            onClick={() => { 
+            onClick={() => {
                 setSendDisabled(true);
-                sendGPT4VInstruction(apiKey, imageUrl, instruction, highRes? Detail.HIGH : Detail.LOW)
+                sendGPT4VInstruction(apiKey, imageUrl, instruction, highRes ? Detail.HIGH : Detail.LOW)
                     .then((response) => {
                         setResponse(JSON.stringify(response, null, 4));
                         setSendDisabled(false);
@@ -90,7 +93,7 @@ function SendButton( {isSendDisabled, setSendDisabled, apiKey, imageUrl, instruc
     )
 }
 
-function RequestResponse( {formattedPayload, formattedResponse} ) {
+function RequestResponse({ formattedPayload, formattedResponse }) {
     return (
         <div className="margin-no-top">
             <Tabs>
@@ -118,12 +121,12 @@ function RequestResponse( {formattedPayload, formattedResponse} ) {
     )
 }
 
-function ImagePreview( {imageUrl} ) {
+function ImagePreview({ imageUrl }) {
     return (
         <div className="image-preview-container margin-no-top">
-            <img 
-                src={imageUrl} 
-                alt="Image Preview" 
+            <img
+                src={imageUrl}
+                alt="Image Preview"
                 className="image-preview"
             />
             <div className="resolution-text">512x512</div>
@@ -132,7 +135,8 @@ function ImagePreview( {imageUrl} ) {
     )
 }
 
-export default function Instruction() {
+
+function InstructionBody() {
     const [imageUrl, setImageUrl] = useState("");
     const [apiKey, setApiKey] = useState("");
     const [instruction, setInstruction] = useState("");
@@ -141,35 +145,35 @@ export default function Instruction() {
     const [formattedResponse, setResponse] = useState("");
     const [isSendDisabled, setSendDisabled] = useState(false);
 
-    const formattedPayload = JSON.stringify(getGPT4Vpayload(imageUrl, instruction, highRes? Detail.HIGH : Detail.LOW, maxTokens), null, 4);
+    const formattedPayload = JSON.stringify(getGPT4Vpayload(imageUrl, instruction, highRes ? Detail.HIGH : Detail.LOW, maxTokens), null, 4);
 
     return (
         <div className="row-div">
             <div className="column-div">
-                <textarea 
-                    placeholder="Instruction Goes Here" 
+                <textarea
+                    placeholder="Instruction Goes Here"
                     className="rounded-corners textarea margin"
                     value={instruction}
                     onChange={e => setInstruction(e.target.value)}
                 />
                 <div className="row-div">
-                    <TextField 
+                    <TextField
                         className="margin-no-top"
-                        placeholder="Enter Your API KEY here" 
-                        value={apiKey} 
-                        onChange={e => setApiKey(e.target.value)} 
+                        placeholder="Enter Your API KEY here"
+                        value={apiKey}
+                        onChange={e => setApiKey(e.target.value)}
                     />
                     <MaxTokens
-                        maxTokens={maxTokens} 
-                        onChange={e => setMaxTokens(parseInt(e.target.value, 10))} 
+                        maxTokens={maxTokens}
+                        onChange={e => setMaxTokens(parseInt(e.target.value, 10))}
                     />
                     <CheckBox
-                        checked={highRes} 
-                        onChange={e => setHighRes(e.target.checked)} 
+                        checked={highRes}
+                        onChange={e => setHighRes(e.target.checked)}
                         label="High Res."
                     />
                 </div>
-                <SendButton 
+                <SendButton
                     isSendDisabled={isSendDisabled}
                     setSendDisabled={setSendDisabled}
                     apiKey={apiKey}
@@ -183,19 +187,48 @@ export default function Instruction() {
                     formattedResponse={formattedResponse}
                 />
             </div>
-            
+
             <div className="column-div">
                 <img src={imageUrl} alt="Your Chosen Picture" className="image margin" />
-                <TextField 
-                    placeholder="Enter image URL" 
-                    value={imageUrl} 
-                    onChange={e => setImageUrl(e.target.value)} 
+                <TextField
+                    placeholder="Enter image URL"
+                    value={imageUrl}
+                    onChange={e => setImageUrl(e.target.value)}
                 />
                 {
                     !highRes && imageUrl &&
-                    <ImagePreview imageUrl={imageUrl}/>
+                    <ImagePreview imageUrl={imageUrl} />
                 }
             </div>
         </div>
     );
+}
+
+
+export default function Instruction() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticatedVar, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        if (isLoading) { // Once it's loaded (authenticated), we don't want to check again.
+            isAuthenticated().then(authenticated => {
+                setIsAuthenticated(authenticated);
+                setIsLoading(false);
+            });
+        }
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="center-spinner">
+              <ReactLoading type={'spin'} color={'#000'} height={50} width={50} />
+            </div>
+          );
+    }
+
+    if (!isAuthenticatedVar) {
+        return <Navigate to="/" />;
+    } else {
+        return <InstructionBody/>;
+    }
 }
