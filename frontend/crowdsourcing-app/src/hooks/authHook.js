@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { isAuthenticated } from "../utils/loginUtil";
 
-export default function useAuthenticationStatus() {
+export default function useAuthStatus() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticatedVar, setIsAuthenticated] = useState(false);
 

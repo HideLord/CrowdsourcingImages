@@ -39,7 +39,7 @@ def store_pair():
 
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
-    
+
 
 """
 POST request used to update a user's username.
@@ -61,6 +61,31 @@ def store_pair():
         db.update_user(email, data)
 
         return "Username successfully updated", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+    
+
+"""
+POST request used to get the current user's info. It uses the session to get the email.
+"""
+@bp.route("/user", methods=["GET"])
+@limiter.limit("30/minute")
+def store_pair():
+    if not _is_authenticated():
+        return "Invalid or expired session token", 401
+    
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        db = current_app.config["images_db"]
+        user_info = db.get_user_info(session["email"])
+
+        return user_info._asdict(), 200
 
     except BadRequest as e:
         return str(e), 400
@@ -100,6 +125,12 @@ def login():
     if otp and otp in otps and otps[otp] == email:
         session['email'] = email  # Store the email in session
 
+        # Check if the email is new and create a user if so.
+        from flask import current_app
+        db = current_app.config["images_db"]
+        user_info = db.get_user_info(email)
+        if not user_info: # user does not exist
+            db.create_user(email, secrets.token_hex(16))
         return redirect(link)
     else:
         return "Invalid OTP", 400

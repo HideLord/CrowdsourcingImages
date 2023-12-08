@@ -7,7 +7,7 @@ import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
 import { storePair } from "../../utils/dbUtil"
-import useAuthenticationStatus from "../../hooks/authHook";
+import useAuthStatus from "../../hooks/authHook";
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -206,7 +206,7 @@ function InstructionBody() {
 
 
 export default function Instruction() {
-    let [isLoading, isAuthenticatedVar] = useAuthenticationStatus();
+    let [isLoading, isAuthenticatedVar] = useAuthStatus();
 
     if (isLoading) {
         return (
