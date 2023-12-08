@@ -1,4 +1,8 @@
 .settings-body {
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-top: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     border-radius: 10px; /* Adjust as needed */

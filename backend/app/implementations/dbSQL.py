@@ -1,5 +1,5 @@
 from interfaces.dbInterface import DBInterface
-from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, inspect
+from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from json import dumps
@@ -32,19 +32,19 @@ class SQLDatabase(DBInterface):
                                      Column('pk', Integer, primary_key=True, autoincrement=True),
                                      Column('email', String),
                                      Column('username', String),
-                                     Column('instruction_count', String),
-                                     Column('description_count', String))
+                                     Column('instruction_count', Integer),
+                                     Column('description_count', Integer))
             
         metadata.create_all(self.engine)
 
-    def store_pair(self, image_url: str, json: Union[str, dict, list]):
-        if json and image_url and isinstance(image_url, str):
-            if isinstance(json, (dict, list)):
-                json = dumps(json)
-            elif not isinstance(json, str):
-                raise TypeError(f"Unexpected json type {type(json)}.")
+    def store_pair(self, image_url: str, data: Union[str, dict, list]):
+        if data and image_url and isinstance(image_url, str):
+            if isinstance(data, (dict, list)):
+                data = dumps(data)
+            elif not isinstance(data, str):
+                raise TypeError(f"Unexpected json type {type(data)}.")
         else:
             raise TypeError("image_url and json must not be None.")
 
         with self.session.begin():
-            self.session.execute(self.pairs_table.insert().values(image_url=image_url, json=json))
+            self.session.execute(self.pairs_table.insert().values(image_url=image_url, json=data))

@@ -25,16 +25,42 @@ def store_pair():
     try:
         # This needs to be imported inside the request context.
         from flask import current_app
-    
-        json_data = request.get_json()
 
-        image_url = json_data["image_url"]
-        data = json_data["data"]
+        image_url = request.get_json()["image_url"]
+        data = request.get_json()["data"]
 
         db = current_app.config["images_db"]
         db.store_pair(image_url, data)
 
         return "Pair stored successfully", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+    
+
+"""
+POST request used to update a user's username.
+"""
+@bp.route("/update_user", methods=["POST"])
+@limiter.limit("6/minute")
+def store_pair():
+    if not _is_authenticated():
+        return "Invalid or expired session token", 401
+    
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        email = session["email"]
+        data = request.get_json()["data"]
+
+        db = current_app.config["images_db"]
+        db.update_user(email, data)
+
+        return "Username successfully updated", 200
 
     except BadRequest as e:
         return str(e), 400
