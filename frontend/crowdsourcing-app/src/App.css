@@ -65,3 +65,10 @@
 .blue-button:disabled {
     background-color: gray;
 }
+
+.center-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

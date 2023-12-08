@@ -4,6 +4,15 @@
     display: flex;
     flex-direction: row;
     color: white;
+    justify-content: space-between;
+}
+
+.sub-div {
+    background-color: #586683;
+    min-height: calc(20px + 5vmin);
+    display: flex;
+    flex-direction: row;
+    color: white;
 }
 
 .link {
@@ -11,4 +20,5 @@
     display: flex;
     margin: calc(5px + 1vmin);
     font-size: calc(10px + 2vmin);
+    color: white;
 }

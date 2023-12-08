@@ -1,0 +1,28 @@
+.settings-body {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px; /* Adjust as needed */
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15); /* Adjust as needed */
+    padding: 20px; /* Adjust as needed */
+    background-color: #fff; /* Adjust as needed */
+}
+
+.settings-field {
+    display: flex;
+    align-items: center;
+}
+
+.settings-field h2 {
+    flex-basis: max(6vw, 150px);
+    margin-bottom: 6px;
+    margin-top: 6px;
+}
+
+.settings-field input {
+    font-size: 18px;
+}
+
+.settings-field label[role="img"] {
+    cursor: pointer;
+    margin-left: 10px;
+}

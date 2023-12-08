@@ -55,10 +55,3 @@
     margin-left: 10px;
     width: 50px;
 }
-
-.center-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}

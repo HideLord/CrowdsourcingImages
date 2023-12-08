@@ -7,7 +7,7 @@ import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
 import { storePair } from "../../utils/dbUtil"
-import { isAuthenticated } from "../../utils/loginUtil";
+import useAuthenticationStatus from "../../hooks/authHook";
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -206,17 +206,7 @@ function InstructionBody() {
 
 
 export default function Instruction() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticatedVar, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        if (isLoading) { // Once it's loaded (authenticated), we don't want to check again.
-            isAuthenticated().then(authenticated => {
-                setIsAuthenticated(authenticated);
-                setIsLoading(false);
-            });
-        }
-    }, []);
+    let [isLoading, isAuthenticatedVar] = useAuthenticationStatus();
 
     if (isLoading) {
         return (
