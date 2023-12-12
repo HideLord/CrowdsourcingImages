@@ -41,3 +41,20 @@ export async function updateUser(data) {
     const result = await response.text();
     return result;
 }
+
+export async function getCurrentUserInfo() {
+    const response = await fetch('http://localhost:5000/user', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    return await response.json();
+}

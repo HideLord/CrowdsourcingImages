@@ -1,13 +1,11 @@
 import "./Instruction.css";
 import "../../App.css";
 import React, { useState, useEffect } from "react";
-import { Navigate } from 'react-router-dom';
-import ReactLoading from 'react-loading';
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
 import { storePair } from "../../utils/dbUtil"
-import useAuthStatus from "../../hooks/authHook";
+import Authentication from "../authentication/Authentication";
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -206,19 +204,9 @@ function InstructionBody() {
 
 
 export default function Instruction() {
-    let [isLoading, isAuthenticatedVar] = useAuthStatus();
-
-    if (isLoading) {
-        return (
-            <div className="center-spinner">
-              <ReactLoading type={'spin'} color={'#000'} height={50} width={50} />
-            </div>
-          );
-    }
-
-    if (!isAuthenticatedVar) {
-        return <Navigate to="/" />;
-    } else {
-        return <InstructionBody/>;
-    }
+    return (
+        <Authentication>
+            <InstructionBody/>
+        </Authentication>
+    )
 }

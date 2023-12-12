@@ -29,7 +29,7 @@ def store_pair():
         image_url = request.get_json()["image_url"]
         data = request.get_json()["data"]
 
-        db = current_app.config["images_db"]
+        db = current_app.config["db"]
         db.store_pair(image_url, data)
 
         return "Pair stored successfully", 200
@@ -46,7 +46,7 @@ POST request used to update a user's username.
 """
 @bp.route("/update_user", methods=["POST"])
 @limiter.limit("6/minute")
-def store_pair():
+def update_user():
     if not _is_authenticated():
         return "Invalid or expired session token", 401
     
@@ -57,8 +57,8 @@ def store_pair():
         email = session["email"]
         data = request.get_json()["data"]
 
-        db = current_app.config["images_db"]
-        db.update_user(email, data)
+        db = current_app.config["db"]
+        db.update_user(email, data["username"])
 
         return "Username successfully updated", 200
 
@@ -74,7 +74,7 @@ POST request used to get the current user's info. It uses the session to get the
 """
 @bp.route("/user", methods=["GET"])
 @limiter.limit("30/minute")
-def store_pair():
+def user():
     if not _is_authenticated():
         return "Invalid or expired session token", 401
     
@@ -82,7 +82,7 @@ def store_pair():
         # This needs to be imported inside the request context.
         from flask import current_app
 
-        db = current_app.config["images_db"]
+        db = current_app.config["db"]
         user_info = db.get_user_info(session["email"])
 
         return user_info._asdict(), 200
@@ -127,7 +127,7 @@ def login():
 
         # Check if the email is new and create a user if so.
         from flask import current_app
-        db = current_app.config["images_db"]
+        db = current_app.config["db"]
         user_info = db.get_user_info(email)
         if not user_info: # user does not exist
             db.create_user(email, secrets.token_hex(16))
