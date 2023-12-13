@@ -1,5 +1,5 @@
 from interfaces.dbInterface import DBInterface
-from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect
+from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect, column
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from json import dumps
@@ -63,11 +63,15 @@ class SQLDatabase(DBInterface):
             raise TypeError("email and username must not be None and must be of type str.")
 
 
-    def update_user(self, email: str, new_username: str, new_limit: float):
-        if email and new_username and isinstance(email, str) and isinstance(new_username, str):
+    def update_user(self, email: str, data: dict):
+        if email and data and isinstance(email, str) and isinstance(data, dict):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(username=new_username, cash_limit=new_limit)
+                    self.users_table.update().where(self.users_table.c.email == email).values(username=data["username"], 
+                                                                                              cash_limit=data["cash_limit"],
+                                                                                              cash_spent=data["cash_spent"],
+                                                                                              instruction_count=data["instruction_count"],
+                                                                                              description_count=data["description_count"])
                 )
         else:
             raise TypeError("email and new_username must not be None and must be of type str.")
@@ -81,3 +85,23 @@ class SQLDatabase(DBInterface):
                     ).fetchone()
         else:
             raise TypeError("email must not be None and must be of type str.")
+        
+
+    def update_instruction_count(self, email: str, count: int):
+        if email and count and isinstance(email, str) and isinstance(count, int):
+            with self.session.begin():
+                self.session.execute(
+                    self.users_table.update().where(self.users_table.c.email == email).values(instruction_count=column('instruction_count') + count)
+                )
+        else:
+            raise TypeError("email and count must not be None and of type str and int.")
+
+
+    def update_description_count(self, email: str, count: int):
+        if email and count and isinstance(email, str) and isinstance(count, int):
+            with self.session.begin():
+                self.session.execute(
+                    self.users_table.update().where(self.users_table.c.email == email).values(description_count=column('description_count') + count)
+                )
+        else:
+            raise TypeError("email and count must not be None and of type str and int.")

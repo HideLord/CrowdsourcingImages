@@ -12,7 +12,7 @@ export default function useAuthStatus() {
                 setIsLoading(false);
             });
         }
-    }, [isLoading]);
+    }, []);
 
     return [isLoading, isAuthenticatedVar];
 }

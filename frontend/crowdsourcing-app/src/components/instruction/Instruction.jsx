@@ -3,9 +3,10 @@ import "../../App.css";
 import React, { useState, useEffect } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import { Detail, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
+import { Detail, calculateGPT4VPrice, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
 import { storePair } from "../../utils/dbUtil"
 import Authentication from "../authentication/Authentication";
+import checkFundsAndSend from "../../utils/fundsManager";
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -67,7 +68,7 @@ function SendButton({ isSendDisabled, setSendDisabled, apiKey, imageUrl, instruc
             disabled={isSendDisabled}
             onClick={() => {
                 setSendDisabled(true);
-                sendGPT4VInstruction(apiKey, imageUrl, instruction, highRes ? Detail.HIGH : Detail.LOW)
+                checkFundsAndSend(calculateGPT4VPrice, sendGPT4VInstruction, [apiKey, imageUrl, instruction, highRes ? Detail.HIGH : Detail.LOW])
                     .then((response) => {
                         setResponse(JSON.stringify(response, null, 4));
                         setSendDisabled(false);
@@ -157,7 +158,7 @@ function InstructionBody() {
                 <div className="row-div">
                     <TextField
                         className="margin-no-top"
-                        placeholder="Enter Your API KEY here"
+                        placeholder="Enter Your API KEY Here"
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
                     />

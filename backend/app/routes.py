@@ -26,10 +26,19 @@ def store_pair():
         # This needs to be imported inside the request context.
         from flask import current_app
 
+        email = session["email"]
         image_url = request.get_json()["image_url"]
         data = request.get_json()["data"]
 
         db = current_app.config["db"]
+
+        if (data["type"] == "instruction"):
+            db.update_instruction_count(email, 1)
+        elif (data["type"] == "description"):
+            db.update_description_count(email, 1)
+        else:
+            return f"Unknown type {data["type"]}", 400
+        
         db.store_pair(image_url, data)
 
         return "Pair stored successfully", 200
@@ -56,9 +65,10 @@ def update_user():
 
         email = session["email"]
         data = request.get_json()["data"]
+        data["email"] = email # this is done to prevent the user from modifying their email.
 
         db = current_app.config["db"]
-        db.update_user(email, data["username"], data["cash_limit"])
+        db.update_user(email, data)
 
         return "Username successfully updated", 200
 
@@ -130,7 +140,7 @@ def login():
         db = current_app.config["db"]
         user_info = db.get_user_info(email)
         if not user_info: # user does not exist
-            db.create_user(email, secrets.token_hex(16), 10.0)
+            db.create_user(email, secrets.token_hex(16))
         return redirect(link)
     else:
         return "Invalid OTP", 400

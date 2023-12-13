@@ -14,5 +14,13 @@ class DBInterface(ABC):
         pass
 
     @abstractmethod
+    def update_instruction_count(self, email: str, count: int):
+        pass
+
+    @abstractmethod
+    def update_description_count(self, email: str, count: int):
+        pass
+
+    @abstractmethod
     def get_user_info(self, email: str):
         pass

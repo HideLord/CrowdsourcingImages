@@ -45,7 +45,7 @@ function SettingsBody() {
     }
 
     const getBarColor = (spent, limit) => {
-        const ratio = limit? spent / limit : 1;
+        const ratio = Math.min(1.0, limit? spent / limit : 1);
         const hue = ((1 - ratio) * 120).toString(10);
         return [`hsl(${hue}, 100%, 50%)`, ratio];
     };
