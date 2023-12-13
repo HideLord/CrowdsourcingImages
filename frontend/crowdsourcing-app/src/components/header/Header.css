@@ -1,6 +1,6 @@
 .App-header {
     background-color: #586683;
-    min-height: calc(20px + 5vmin);
+    min-height: calc(20px + 2vmin);
     display: flex;
     flex-direction: row;
     color: white;
@@ -9,7 +9,6 @@
 
 .sub-div {
     background-color: #586683;
-    min-height: calc(20px + 5vmin);
     display: flex;
     flex-direction: row;
     color: white;
@@ -18,7 +17,7 @@
 .link {
     text-decoration: none;
     display: flex;
-    margin: calc(5px + 1vmin);
-    font-size: calc(10px + 2vmin);
+    margin: 10px;
+    font-size: 2vmin;
     color: white;
 }

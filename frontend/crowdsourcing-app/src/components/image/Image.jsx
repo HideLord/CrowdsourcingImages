@@ -2,10 +2,10 @@ import "./Image.css";
 import "../../App.css";
 import React from "react";
 
-export default function Image({ imageUrl }) {
+export default function Image({ imageUrl, imageClass, wrapperClass }) {
     return (
-        <div className="image-container margin">
-            <img src={imageUrl} alt="Your Chosen Picture" className="image" />
+        <div className={wrapperClass ? wrapperClass : "image-container"}>
+            <img src={imageUrl} alt="Your Chosen Picture" className={imageClass ? imageClass : "image"} />
         </div>
     );
 }

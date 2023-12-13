@@ -149,7 +149,7 @@ function InstructionBody() {
 
     return (
         <div className="row-div">
-            <div className="column-div">
+            <div className="column-div-half">
                 <textarea
                     placeholder="Instruction Goes Here"
                     className="rounded-corners textarea margin"
@@ -188,8 +188,10 @@ function InstructionBody() {
                 />
             </div>
 
-            <div className="column-div">
-                <Image imageUrl={imageUrl}></Image>
+            <div className="column-div-half">
+                <div className="margin">
+                    <Image imageUrl={imageUrl}/>
+                </div>
                 <TextField
                     placeholder="Enter image URL"
                     value={imageUrl}

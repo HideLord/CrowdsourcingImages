@@ -84,6 +84,8 @@ function SettingsBody() {
                             type="number" 
                             className="rounded-corners" 
                             value={userInfo.cash_limit} 
+                            min="0"
+                            step="0.01"
                             onChange={(e) => {setLimit(e.target.value)}}
                             onKeyUp={(e) => { if(e.key === 'Enter') submitLimit() }}
                             onBlur={submitLimit}

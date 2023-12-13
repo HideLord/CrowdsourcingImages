@@ -1,0 +1,36 @@
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(auto, 256px));
+    grid-gap: 16px;
+}
+
+.image-256 {
+    max-width: 100%;
+    max-height: 256px;
+    width: auto;
+    height: auto;
+    object-fit: scale-down;
+}
+
+.image-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+.image-wrapper:hover {
+    background-color: #ccc;
+}
+
+.long-textarea {
+    width: 80vw;
+    max-width: 450px;
+    padding: 5px;
+}
+
+.long-button {
+    width: calc(80vw + 14px);
+    border-radius: 5px;
+    max-width: 464px; /*450 + 5 + 5 + 2 + 2 (the body + padding + border of the long text area)*/
+}

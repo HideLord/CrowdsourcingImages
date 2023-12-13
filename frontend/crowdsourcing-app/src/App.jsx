@@ -6,6 +6,7 @@ import Header from './components/header/Header';
 import Instruction from './components/instruction/Instruction';
 import Login from './components/login/Login';
 import Settings from './components/settings/Settings';
+import Description from './components/Description/Description';
 
 function App() {
     return (
@@ -14,7 +15,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Login/>}/>
                 <Route path="/instruction" element={<Instruction/>}/>
-                <Route path="/description" element={<Instruction/>}/>
+                <Route path="/description" element={<Description/>}/>
                 <Route path="/statistics" element={<Instruction/>}/>
                 <Route path="/settings" element={<Settings/>}/>
             </Routes>
