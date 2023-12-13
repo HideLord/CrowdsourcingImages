@@ -24,7 +24,8 @@ export default function Login() {
     };
 
     return (
-        <div className="login-container">
+        <div>
+            <img src="/logo512.png" alt="Logo" className="logo-image" />
             <form onSubmit={handleGo} className="login-container">
                 <input
                     type="email"
@@ -40,8 +41,8 @@ export default function Login() {
                     className="blue-button long-button">
                         Go
                 </button>
+                {isSent && <p className="notification-text">Email sent! Please check your inbox or spam folder.</p>}
             </form>
-            {isSent && <p className="notification-text">Email sent! Please check your inbox or spam folder.</p>}
         </div>
     );
 }

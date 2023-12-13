@@ -13,9 +13,16 @@
 
 .long-button {
     width: 22vw;
-    border-radius: 40px;
+    border-radius: 5px;
 }
 
 .notification-text {
     color: green;
+}
+
+.logo-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
 }
