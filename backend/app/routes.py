@@ -54,7 +54,7 @@ def store_pair():
 POST request used to update a user's username.
 """
 @bp.route("/update_user", methods=["POST"])
-@limiter.limit("6/minute")
+@limiter.limit("120/minute")
 def update_user():
     if not _is_authenticated():
         return "Invalid or expired session token", 401

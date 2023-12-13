@@ -7,6 +7,7 @@
 .big-textfield {
     height: 3vh;
     width: 20vw;
+    min-width: 250px;
     font-size: 14pt;
     padding: 1vw;
 }
@@ -14,6 +15,7 @@
 .long-button {
     width: 22vw;
     border-radius: 5px;
+    min-width: calc(250px + 2vw);
 }
 
 .notification-text {

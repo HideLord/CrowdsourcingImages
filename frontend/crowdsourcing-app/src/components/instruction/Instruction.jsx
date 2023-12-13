@@ -1,6 +1,6 @@
 import "./Instruction.css";
 import "../../App.css";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, calculateGPT4VPrice, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
@@ -8,47 +8,7 @@ import { storePair } from "../../utils/dbUtil"
 import Authentication from "../authentication/Authentication";
 import checkFundsAndSend from "../../utils/fundsManager";
 import Image from "../image/Image";
-
-function TextField({ placeholder, value, onChange }) {
-    return (
-        <input
-            className="rounded-corners margin-no-top"
-            type="text"
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-        />
-    )
-}
-
-function MaxTokens({ maxTokens, onChange }) {
-    return (
-        <label htmlFor="maxTokens" className="margin-no-top">
-            Max Tokens:
-            <input
-                className="max-tokens rounded-corners"
-                id="maxTokens"
-                type="number"
-                value={maxTokens}
-                onChange={onChange}
-            />
-        </label>
-    )
-}
-
-function CheckBox({ checked, onChange, label }) {
-    return (
-        <label>
-            <input
-                className="margin-no-top"
-                type="checkbox"
-                checked={checked}
-                onChange={onChange}
-            />
-            {label}
-        </label>
-    )
-}
+import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
 
 function createStorePairData(instruction, highRes, response) {
     let data = {};
@@ -163,8 +123,9 @@ function InstructionBody() {
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
                     />
-                    <MaxTokens
-                        maxTokens={maxTokens}
+                    <NumberInput
+                        label="Max Tokens:"
+                        value={maxTokens}
                         onChange={e => setMaxTokens(parseInt(e.target.value, 10))}
                     />
                     <CheckBox

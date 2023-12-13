@@ -5,18 +5,140 @@ import Authentication from '../authentication/Authentication';
 import Image from '../image/Image';
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
+import { Detail, calculateGPT4VPrice, sendGPT4VInstruction } from "../../utils/openAi"
+import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
+import checkFundsAndSend from "../../utils/fundsManager";
+import { storePair } from "../../utils/dbUtil"
+import ReactLoading from 'react-loading';
+
+const INSTRUCTION = "Describe the image in detail.";
+
+
+const State = {
+    PENDING: 1,
+    SENDING: 2,
+    SUCCESS: 3,
+    FAILURE: 4
+};
+
 
 function parseTextArea(imageUrls) {
     return imageUrls.split(',').map(s => s.trim()).filter(Boolean);
 }
 
-function Method({ images, setImages }) {
+
+function Options({ data }) {
+    return (
+        <div className="row-div">
+            <TextField
+                className="margin-no-top"
+                placeholder="Enter Your API KEY Here"
+                value={data.apiKey}
+                onChange={e => data.setApiKey(e.target.value)}
+            />
+            <NumberInput
+                label="Threads:"
+                value={data.numThreads}
+                onChange={e => data.setNumThreads(parseInt(e.target.value, 10))}
+            />
+            <NumberInput
+                label="Max Tokens:"
+                value={data.maxTokens}
+                onChange={e => data.setMaxTokens(parseInt(e.target.value, 10))}
+            />
+            <CheckBox
+                checked={data.highRes}
+                onChange={e => data.setHighRes(e.target.checked)}
+                label="High Res."
+            />
+        </div>
+    )
+}
+
+
+function createStorePairData(instruction, highRes, response) {
+    let data = {};
+    data.type = "description";
+    data.instruction = instruction;
+    data.detail = highRes ? Detail.HIGH : Detail.LOW;
+    data.response = response.choices[0].message.content;
+    data.promptTokens = response.usage.prompt_tokens;
+    data.completionTokens = response.usage.completion_tokens;
+
+    return data;
+}
+
+
+async function send(data) {
+    console.log("Send called");
+    data.setSendDisabled(true);
+
+    const pool = [];
+
+    const processImage = async (i) => {
+        console.log(`State of ${i}: ${data.states[i]}`)
+        if (data.states[i] !== State.PENDING && data.states[i] !== State.FAILURE) {
+            return;
+        }
+    
+        console.log(`Sending ${i} image ${data.images[i]}`);
+    
+        const imageUrl = data.images[i];
+    
+        data.setStates(prevStates => {
+            const newStates = [...prevStates];
+            newStates[i] = State.SENDING;
+            return newStates;
+        });
+    
+        try {
+            const response = await checkFundsAndSend(calculateGPT4VPrice, sendGPT4VInstruction, [data.apiKey, imageUrl, INSTRUCTION, data.highRes ? Detail.HIGH : Detail.LOW]);
+            const storeData = createStorePairData(INSTRUCTION, data.highRes, response);
+    
+            storePair(imageUrl, storeData);
+    
+            data.setStates(prevStates => {
+                const newStates = [...prevStates];
+                newStates[i] = State.SUCCESS;
+                return newStates;
+            });
+        } catch (error) {
+            console.error("Error occurred in sendGPT4VInstruction:", error);
+    
+            data.setStates(prevStates => {
+                const newStates = [...prevStates];
+                newStates[i] = State.FAILURE;
+                return newStates;
+            });
+        }
+    };
+
+    for (let i = 0; i < data.images.length; ++i) {
+        console.log("i ", i );
+        if (pool.length >= data.numThreads) {
+            await Promise.race(pool);
+        }
+
+        const currentPromise = processImage(i).finally(() => {
+            pool.splice(pool.indexOf(currentPromise), 1);
+        });
+
+        pool.push(currentPromise);
+    }
+
+    await Promise.all(pool);
+
+    data.setSendDisabled(false);
+}
+
+
+function Method({ data }) {
     return (
         <div className="margin">
             <Tabs>
                 <TabList>
                     <Tab>Auto-Choose</Tab>
-                    <Tab>Money Limit</Tab>
+                    <Tab>Cost Limit</Tab>
                     <Tab>Custom</Tab>
                 </TabList>
 
@@ -25,29 +147,41 @@ function Method({ images, setImages }) {
                         Enter the number of images you'd like to caption, and the system will auto-choose them for you.
                     </p>
                     <input className="rounded-corners margin-no-top" type="number" placeholder="Number of images" />
+                    <Options data={data} />
                 </TabPanel>
                 <TabPanel>
                     <p className="margin-no-top">
                         Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.
                     </p>
                     <input className="rounded-corners margin-no-top" type="number" placeholder="Amount of money" min="0" step="0.01" />
+                    <Options data={data} />
                 </TabPanel>
                 <TabPanel>
                     <p className="margin-no-top">
                         Enter comma-separated image URLs into the textbox below.
                     </p>
-                    <textarea 
-                        className="rounded-corners margin-no-top textarea long-textarea" 
+                    <textarea
+                        className="rounded-corners margin-no-top textarea long-textarea"
                         placeholder="Enter image URLs, separated by commas"
-                        value={images.join(',\n\n')}
-                        onChange={(e) => setImages(parseTextArea(e.target.value))}>    
+                        value={data.images.join(',\n\n')}
+                        onChange={(e) => {
+                            data.setImages(parseTextArea(e.target.value));
+                            data.setStates(new Array(data.images.length).fill(State.PENDING));
+                        }}>
                     </textarea>
+                    <Options data={data} />
                 </TabPanel>
             </Tabs>
-            <button className="blue-button margin-no-top go-button">Go</button>
+            <button 
+                className="blue-button margin-no-top go-button" 
+                onClick={async () => send(data)}
+                disabled={data.isSendDisabled}>
+                Send
+            </button>
         </div>
     )
 }
+
 
 function DescriptionBody() {
     const [images, setImages] = useState([
@@ -68,23 +202,45 @@ function DescriptionBody() {
         "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpicjumbo.com%2Fwp-content%2Fuploads%2Fmaltese-dog-puppy-1570x1047.jpg&f=1&nofb=1&ipt=1dd619ac1ad0f0219ec7383a89cf4bd6bdfb58c3ecfc2ff252737161ed99ea33&ipo=images",
         "https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.pixelstalk.net%2Fwp-content%2Fuploads%2F2016%2F04%2FGolden-retriever-dogs-high-definition-wallpapers.jpg&f=1&nofb=1&ipt=3470400555631c862452a0fcb43101926d12b5c7d040d365bc4b2a07513277f3&ipo=images",
     ]);
+    const [states, setStates] = useState(new Array(images.length).fill(State.PENDING))
+    const [apiKey, setApiKey] = useState("");
+    const [highRes, setHighRes] = useState(false);
+    const [maxTokens, setMaxTokens] = useState(300);
+    const [numThreads, setNumThreads] = useState(8);
+    const [isSendDisabled, setSendDisabled] = useState(false);
+
+    const data = {
+        images, setImages,
+        states, setStates,
+        apiKey, setApiKey,
+        highRes, setHighRes,
+        maxTokens, setMaxTokens,
+        numThreads, setNumThreads,
+        isSendDisabled, setSendDisabled
+    }
 
     return (
         <div className='column-div'>
-            <Method images={images} setImages={setImages}></Method>
-            <div className="column-div image-grid margin-no-top">
+            <Method data={data}></Method>
+            <div className="column-div image-grid margin-no-top">   
                 {images.map((imageUrl, index) => (
-                    <Image imageUrl={imageUrl} imageClass="image-256" wrapperClass="image-wrapper"/>
+                    <div style={{position:'relative'}}>
+                        {data.states[index] === State.SENDING && <><div className="overlay"/><div className='sending-spinner'><ReactLoading type={'spin'} color={'DarkSeaGreen'} height={50} width={50} /></div></>}
+                        {data.states[index] === State.SUCCESS && <><div className="overlay"/><div className='check'><label>✔️</label></div></>}
+                        {data.states[index] === State.FAILURE && <><div className="overlay"/><div className='cross'><label>❌</label></div></>}
+                        <Image imageUrl={imageUrl} imageClass="image-256" wrapperClass="image-wrapper" />
+                    </div>
                 ))}
             </div>
         </div>
     )
 }
 
+
 export default function Description() {
-  return (
-    <Authentication>
-        <DescriptionBody/>
-    </Authentication>
-  );
+    return (
+        <Authentication>
+            <DescriptionBody />
+        </Authentication>
+    );
 };

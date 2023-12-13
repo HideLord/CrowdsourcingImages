@@ -25,7 +25,10 @@ export default function Login() {
 
     return (
         <div>
-            <img src="/logo512.png" alt="Logo" className="logo-image" />
+            <picture>
+                <source srcSet="/logo192.png" media="(max-width: 1023px)"/>
+                <img src="/logo512.png" alt="Logo" className="logo-image" />
+            </picture>
             <form onSubmit={handleGo} className="login-container">
                 <input
                     type="email"
