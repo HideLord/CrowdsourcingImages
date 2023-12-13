@@ -8,7 +8,7 @@ class EmailServerImpl(EmailServerInterface):
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USE_TLS = False
-    MAIL_USERNAME = 'polimonom@gmail.com'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME', 'polimonom@gmail.com')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 
     def configure(self, app: Flask = None):

@@ -58,7 +58,7 @@ def update_user():
         data = request.get_json()["data"]
 
         db = current_app.config["db"]
-        db.update_user(email, data["username"])
+        db.update_user(email, data["username"], data["cash_limit"])
 
         return "Username successfully updated", 200
 
@@ -130,7 +130,7 @@ def login():
         db = current_app.config["db"]
         user_info = db.get_user_info(email)
         if not user_info: # user does not exist
-            db.create_user(email, secrets.token_hex(16))
+            db.create_user(email, secrets.token_hex(16), 10.0)
         return redirect(link)
     else:
         return "Invalid OTP", 400

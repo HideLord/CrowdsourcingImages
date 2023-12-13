@@ -1,8 +1,5 @@
 .settings-body {
-    margin-left: 10vw;
-    margin-right: 10vw;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin: 20px 10vw;
     display: flex;
     flex-direction: column;
     border-radius: 10px;
@@ -18,15 +15,49 @@
 
 .settings-field h2 {
     flex-basis: max(6vw, 150px);
-    margin-bottom: 6px;
-    margin-top: 6px;
+    margin: 6px 0px;
 }
 
 .settings-field input {
     font-size: 18px;
 }
 
-.settings-field label[role="img"] {
+.settings-field label {
     cursor: pointer;
     margin-left: 10px;
+}
+
+.progress-bar-background {
+    margin-top: 6px;
+    width: 50vw;
+    background-color: #eee;
+    border-radius: 4px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.progress-bar-fill {
+    border-radius: 4px;
+    height: 20px;
+    transition: width 0.3s ease;
+    position: absolute;
+    left: 0;
+    z-index: 0;
+}
+
+.progress-bar-text {
+    color: black;
+    text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+    font-size: 15px;
+    z-index: 1;
+}
+
+.separator {
+    border: none;
+    height: 1px;
+    background-color: #333;
+    margin: 10px 0;
 }

@@ -7,7 +7,8 @@ import CenteredSpinner from "../centeredSpinner/CenteredSpinner";
 import { updateUser } from "../../utils/dbUtil";
 
 function SettingsBody() {
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [isEditingLimit, setIsEditingLimit] = useState(false);
 
     let [isLoading, userInfo, setUserInfo] = useUserInfo();
 
@@ -22,34 +23,79 @@ function SettingsBody() {
         });
     };
 
-    let submit = () => {
-        if (isEditing) {
+    let submitUsername = () => {
+        if (isEditingUsername) {
             updateUser(userInfo);
         }
-        setIsEditing(!isEditing);
+        setIsEditingUsername(!isEditingUsername);
     }
+
+    let setLimit = (newLimit) => {
+        setUserInfo({
+            ...userInfo,
+            cash_limit: parseFloat(newLimit)
+        });
+    };
+
+    let submitLimit = () => {
+        if (isEditingLimit) {
+            updateUser(userInfo);
+        }
+        setIsEditingLimit(!isEditingLimit);
+    }
+
+    const getBarColor = (spent, limit) => {
+        const ratio = limit? spent / limit : 1;
+        const hue = ((1 - ratio) * 120).toString(10);
+        return [`hsl(${hue}, 100%, 50%)`, ratio];
+    };
+
+    const [barColor, spentRatio] = getBarColor(userInfo.cash_spent, userInfo.cash_limit);
 
     return (
         <div>
             <div className="settings-body">
                 <div className="settings-field">
                     <h2>Username</h2>
-                    {isEditing ? (
+                    {isEditingUsername ? (
                         <input 
                             type="text" 
                             className="rounded-corners" 
                             value={userInfo.username} 
                             onChange={(e) => {setUsername(e.target.value)}}
+                            onKeyUp={(e) => { if(e.key === 'Enter') submitUsername() }}
+                            onBlur={submitUsername}
                             id="username-input"
                         />
                     ) : (
                         <span>{userInfo.username}</span>
                     )}
-                    <label htmlFor="username-input" role="img" aria-label="edit" onClick={submit}>✏️</label>
+                    <label htmlFor="username-input" aria-label="edit" onClick={submitUsername}>✏️</label>
                 </div>
                 <div className="settings-field">
                     <h2>Email</h2>
                     <span>{userInfo.email}</span>
+                </div>
+                <hr className="separator"/>
+                <div className="settings-field">
+                    <h2>Cash Spent</h2>
+                    {isEditingLimit ? (
+                         <input 
+                            type="number" 
+                            className="rounded-corners" 
+                            value={userInfo.cash_limit} 
+                            onChange={(e) => {setLimit(e.target.value)}}
+                            onKeyUp={(e) => { if(e.key === 'Enter') submitLimit() }}
+                            onBlur={submitLimit}
+                            id="limit-input"
+                        />
+                    ) : (
+                    <div className="progress-bar-background">
+                        <div className="progress-bar-fill" style={{ width: `${spentRatio * 100}%`, backgroundColor: barColor}}/>
+                        <div className="progress-bar-text">{userInfo.cash_spent}/{userInfo.cash_limit}</div>
+                    </div>
+                    )}
+                    <label htmlFor="limit-input" aria-label="edit" onClick={submitLimit}>✏️</label>
                 </div>
             </div>
         </div>

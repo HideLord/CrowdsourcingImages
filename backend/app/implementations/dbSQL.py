@@ -1,5 +1,5 @@
 from interfaces.dbInterface import DBInterface
-from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, inspect
+from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from json import dumps
@@ -33,7 +33,9 @@ class SQLDatabase(DBInterface):
                                      Column('email', String),
                                      Column('username', String),
                                      Column('instruction_count', Integer),
-                                     Column('description_count', Integer))
+                                     Column('description_count', Integer),
+                                     Column('cash_limit', Float, default=10.0),
+                                     Column('cash_spent', Float, default=0.0))
             
         metadata.create_all(self.engine)
 
@@ -61,11 +63,11 @@ class SQLDatabase(DBInterface):
             raise TypeError("email and username must not be None and must be of type str.")
 
 
-    def update_user(self, email: str, new_username: str):
+    def update_user(self, email: str, new_username: str, new_limit: float):
         if email and new_username and isinstance(email, str) and isinstance(new_username, str):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(username=new_username)
+                    self.users_table.update().where(self.users_table.c.email == email).values(username=new_username, cash_limit=new_limit)
                 )
         else:
             raise TypeError("email and new_username must not be None and must be of type str.")
