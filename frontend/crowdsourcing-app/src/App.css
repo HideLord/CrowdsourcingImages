@@ -72,3 +72,10 @@
     align-items: center;
     height: 100vh;
 }
+
+.separator {
+    border: none;
+    height: 1px;
+    background-color: #333;
+    margin: 10px 0;
+}

@@ -92,7 +92,7 @@ function SettingsBody() {
                     ) : (
                     <div className="progress-bar-background">
                         <div className="progress-bar-fill" style={{ width: `${spentRatio * 100}%`, backgroundColor: barColor}}/>
-                        <div className="progress-bar-text">{userInfo.cash_spent}/{userInfo.cash_limit}</div>
+                        <div className="progress-bar-text">{userInfo.cash_spent.toFixed(2)}/{userInfo.cash_limit.toFixed(2)} $</div>
                     </div>
                     )}
                     <label htmlFor="limit-input" aria-label="edit" onClick={submitLimit}>✏️</label>

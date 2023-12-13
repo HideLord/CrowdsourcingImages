@@ -7,6 +7,7 @@ import { Detail, calculateGPT4VPrice, getGPT4Vpayload, sendGPT4VInstruction } fr
 import { storePair } from "../../utils/dbUtil"
 import Authentication from "../authentication/Authentication";
 import checkFundsAndSend from "../../utils/fundsManager";
+import Image from "../image/Image";
 
 function TextField({ placeholder, value, onChange }) {
     return (
@@ -188,7 +189,7 @@ function InstructionBody() {
             </div>
 
             <div className="column-div">
-                <img src={imageUrl} alt="Your Chosen Picture" className="image margin" />
+                <Image imageUrl={imageUrl}></Image>
                 <TextField
                     placeholder="Enter image URL"
                     value={imageUrl}
