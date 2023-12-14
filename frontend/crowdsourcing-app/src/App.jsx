@@ -6,7 +6,7 @@ import Header from './components/header/Header';
 import Instruction from './components/instruction/Instruction';
 import Login from './components/login/Login';
 import Settings from './components/settings/Settings';
-import Description from './components/description/Description';
+import Description from './components/descriptionComponent/Description';
 
 function App() {
     return (

@@ -70,18 +70,14 @@ function createStorePairData(instruction, highRes, response) {
 
 
 async function send(data) {
-    console.log("Send called");
     data.setSendDisabled(true);
 
     const pool = [];
 
     const processImage = async (i) => {
-        console.log(`State of ${i}: ${data.states[i]}`)
         if (data.states[i] !== State.PENDING && data.states[i] !== State.FAILURE) {
             return;
         }
-    
-        console.log(`Sending ${i} image ${data.images[i]}`);
     
         const imageUrl = data.images[i];
     
@@ -114,7 +110,6 @@ async function send(data) {
     };
 
     for (let i = 0; i < data.images.length; ++i) {
-        console.log("i ", i );
         if (pool.length >= data.numThreads) {
             await Promise.race(pool);
         }
@@ -224,7 +219,7 @@ function DescriptionBody() {
             <Method data={data}></Method>
             <div className="column-div image-grid margin-no-top">   
                 {images.map((imageUrl, index) => (
-                    <div style={{position:'relative'}}>
+                    <div key={index} style={{position:'relative'}}>
                         {data.states[index] === State.SENDING && <><div className="overlay"/><div className='sending-spinner'><ReactLoading type={'spin'} color={'DarkSeaGreen'} height={50} width={50} /></div></>}
                         {data.states[index] === State.SUCCESS && <><div className="overlay"/><div className='check'><label>✔️</label></div></>}
                         {data.states[index] === State.FAILURE && <><div className="overlay"/><div className='cross'><label>❌</label></div></>}
