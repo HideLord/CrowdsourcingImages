@@ -58,3 +58,25 @@ export async function getCurrentUserInfo() {
 
     return await response.json();
 }
+
+
+export async function updateFunds(cost) {
+    const response = await fetch('http://localhost:5000/update_funds', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cost: cost,
+        }),
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.text();
+    return result;
+}

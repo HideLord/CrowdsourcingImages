@@ -68,10 +68,7 @@ class SQLDatabase(DBInterface):
             with self.session.begin():
                 self.session.execute(
                     self.users_table.update().where(self.users_table.c.email == email).values(username=data["username"], 
-                                                                                              cash_limit=data["cash_limit"],
-                                                                                              cash_spent=data["cash_spent"],
-                                                                                              instruction_count=data["instruction_count"],
-                                                                                              description_count=data["description_count"])
+                                                                                              cash_limit=data["cash_limit"])
                 )
         else:
             raise TypeError("email and new_username must not be None and must be of type str.")
@@ -105,3 +102,13 @@ class SQLDatabase(DBInterface):
                 )
         else:
             raise TypeError("email and count must not be None and of type str and int.")
+
+
+    def update_funds(self, email: str, cost: float):
+        if email and cost and isinstance(email, str) and isinstance(cost, float):
+            with self.session.begin():
+                self.session.execute(
+                    self.users_table.update().where(self.users_table.c.email == email).values(cash_spent=column('cash_spent') + cost)
+                )
+        else:
+            raise TypeError("email and cost must not be None and of type str and float.")

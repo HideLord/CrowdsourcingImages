@@ -103,6 +103,35 @@ def user():
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
     
+
+"""
+POST request used to update a user's funds.
+"""
+@bp.route("/update_funds", methods=["POST"])
+@limiter.limit("120/minute")
+def update_funds():
+    if not _is_authenticated():
+        return "Invalid or expired session token", 401
+    
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        email = session["email"]
+        cost = request.get_json()["cost"]
+
+        db = current_app.config["db"]
+        db.update_funds(email, cost)
+
+        return "Username successfully updated", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+    
+    
     
 @bp.route("/generate_otp", methods=["POST"])
 def generate_otp():

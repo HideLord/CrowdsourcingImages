@@ -22,7 +22,7 @@ export function calculateGPT4VPrice(response) {
     const promptCost = response.usage.prompt_tokens * PROMPT_PRICE_1K / 1000.0;
     const outputCost = response.usage.completion_tokens * OUTPUT_PRICE_1K / 1000.0;
 
-    return outputCost + promptCost
+    return outputCost + promptCost;
 }
 
 export function getGPT4Vpayload(imageUrl, instruction, detail, maxtokens = 300) {

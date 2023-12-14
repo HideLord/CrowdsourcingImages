@@ -1,4 +1,4 @@
-import { getCurrentUserInfo, updateUser } from "./dbUtil";
+import { getCurrentUserInfo, updateFunds } from "./dbUtil";
 
 /**
  * Conditional calling of payed API function. It checks if the user has funds before making the call. After the call, it updates them.
@@ -15,12 +15,8 @@ export default async function checkFundsAndSend(priceFunction, apiFunction, args
     }
 
     const response = await apiFunction(...args);
-    const cost = priceFunction(response);
 
-    updateUser({
-        ...userInfo,
-        cash_spent: userInfo.cash_spent + cost
-    });
+    updateFunds(priceFunction(response));
 
     return response;
 }

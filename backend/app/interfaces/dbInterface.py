@@ -24,3 +24,7 @@ class DBInterface(ABC):
     @abstractmethod
     def get_user_info(self, email: str):
         pass
+
+    @abstractmethod
+    def update_funds(self, email: str, cost: float):
+        pass
