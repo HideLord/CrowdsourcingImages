@@ -123,10 +123,11 @@ async function send(data) {
 
 function Method({ data }) {
     const prevNumImages = useRef(null);
+    const formattedUrls = data.images.join(",\n\n");
 
     return (
         <div className="margin">
-            <Tabs>
+            <Tabs defaultIndex={2}>
                 <TabList>
                     <Tab>Auto-Choose</Tab>
                     <Tab>Cost Limit</Tab>
@@ -172,8 +173,8 @@ function Method({ data }) {
                     <textarea
                         className="rounded-corners margin-no-top textarea long-textarea"
                         placeholder="Enter image URLs, separated by commas"
-                        value={data.images.join(",\n\n")}
-                        onChange={(e) => {
+                        value={formattedUrls}
+                        onBlur={(e) => {
                             const image_urls = parseTextArea(e.target.value);
                             data.setImages(image_urls);
                             data.setStates(new Array(image_urls.length).fill(State.PENDING));

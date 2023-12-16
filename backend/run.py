@@ -3,11 +3,15 @@ import sys
 sys.path.insert(0, "./app")
 sys.path.insert(0, "./app/interfaces")
 sys.path.insert(0, "./app/implementations")
+sys.path.insert(0, "./app/routes")
 
 from app import BackendApp
 from dbSQL import SQLDatabase 
 from emailServerImpl import EmailServerImpl
-from routes import bp, limiter
+from initRoutes import bp, limiter
+from authenticationRoutes import *
+from imageRoutes import *
+from userRoutes import *
 
 if __name__ == "__main__":
     db = SQLDatabase("sqlite:///test_db")

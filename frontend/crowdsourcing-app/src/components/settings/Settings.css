@@ -1,5 +1,6 @@
 .settings-body {
-    margin: 20px 10vw;
+    width: 50%;
+    margin: 20px auto;
     display: flex;
     flex-direction: column;
     border-radius: 10px;
@@ -29,7 +30,7 @@
 
 .progress-bar-background {
     margin-top: 6px;
-    width: 50vw;
+    width: 80%;
     background-color: #eee;
     border-radius: 4px;
     height: 20px;

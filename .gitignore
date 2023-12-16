@@ -4,6 +4,7 @@ backend/app/archive
 backend/app/__pycache__
 backend/app/implementations/__pycache__
 backend/app/interfaces/__pycache__
+backend/app/routes/__pycache__
 backend/test_db
 
 # frontend

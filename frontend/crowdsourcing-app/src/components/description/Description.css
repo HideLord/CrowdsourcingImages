@@ -36,7 +36,7 @@
     width: calc(80vw + 14px);
     border-radius: 5px;
     max-width: 664px;
-    /*450 + 5 + 5 + 2 + 2 (the body + padding + border of the long text area)*/
+    /*650px + 5 + 5 + 2 + 2 (the body + padding + border of the long text area)*/
 }
 
 .sending-spinner {
