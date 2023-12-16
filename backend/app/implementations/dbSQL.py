@@ -173,7 +173,7 @@ class SQLDatabase(DBInterface):
                     self.session.execute(
                         self.archive_table.update().where(self.archive_table.c.pk == pk)\
                             .values(image_urls = updated_image_urls,
-                                    available_count = len(archive_pages[pk]))
+                                    available_count = len(shuffled_urls))
                     )
                     archive_pages.pop(pk)
 

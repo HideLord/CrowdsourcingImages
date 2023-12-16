@@ -1,6 +1,6 @@
 import "./Instruction.css";
 import "../../App.css";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, calculateGPT4VPrice, getGPT4Vpayload, sendGPT4VInstruction } from "../../utils/openAi"
@@ -9,6 +9,8 @@ import Authentication from "../authentication/Authentication";
 import checkFundsAndSend from "../../utils/fundsManager";
 import Image from "../image/Image";
 import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
+import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
+import { InstructionContext } from "../../contexts/InstructionContext/InstructionContext";
 
 function createStorePairData(instruction, highRes, response) {
     let data = {};
@@ -97,13 +99,19 @@ function ImagePreview({ imageUrl }) {
 
 
 function InstructionBody() {
-    const [imageUrl, setImageUrl] = useState("");
-    const [apiKey, setApiKey] = useState("");
-    const [instruction, setInstruction] = useState("");
-    const [highRes, setHighRes] = useState(false);
-    const [maxTokens, setMaxTokens] = useState(300);
-    const [formattedResponse, setResponse] = useState("");
     const [isSendDisabled, setSendDisabled] = useState(false);
+
+    const {
+        apiKey, setApiKey,
+        highRes, setHighRes,
+        maxTokens, setMaxTokens,
+    } = useContext(OptionsContext);
+
+    const {
+        imageUrl, setImageUrl,
+        instruction, setInstruction,
+        formattedResponse, setResponse,
+    } = useContext(InstructionContext);
 
     const formattedPayload = JSON.stringify(getGPT4Vpayload(imageUrl, instruction, highRes ? Detail.HIGH : Detail.LOW, maxTokens), null, 4);
 
