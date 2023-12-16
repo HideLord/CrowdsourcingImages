@@ -1,9 +1,8 @@
-from flask import request, session
+from flask import request, session, redirect
 from werkzeug.exceptions import BadRequest
 
-from tempStorage import otps
 from initRoutes import bp, limiter
-from authenticationRoutes import is_authenticated
+from authenticationRoutes import _is_authenticated
 
 """
 POST request used to update a user's username.
@@ -11,7 +10,7 @@ POST request used to update a user's username.
 @bp.route("/update_user", methods=["POST"])
 @limiter.limit("120/minute")
 def update_user():
-    if not is_authenticated():
+    if not _is_authenticated():
         return "Invalid or expired session token", 401
     
     try:
@@ -35,12 +34,41 @@ def update_user():
     
 
 """
+DELETE user profile from db.
+"""
+@bp.route("/delete_user", methods=["DELETE"])
+@limiter.limit("120/minute")
+def delete_user():
+    if not _is_authenticated():
+        return "Invalid or expired session token", 401
+    
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        email = session["email"]
+
+        db = current_app.config["db"]
+        db.delete_user(email)
+
+        session.clear()
+        
+        return "Successfully deleted user profile", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+    
+
+"""
 POST request used to get the current user's info. It uses the session to get the email.
 """
 @bp.route("/user", methods=["GET"])
 @limiter.limit("30/minute")
 def user():
-    if not is_authenticated():
+    if not _is_authenticated():
         return "Invalid or expired session token", 401
     
     try:
@@ -65,7 +93,7 @@ POST request used to update a user's funds.
 @bp.route("/update_funds", methods=["POST"])
 @limiter.limit("120/minute")
 def update_funds():
-    if not is_authenticated():
+    if not _is_authenticated():
         return "Invalid or expired session token", 401
     
     try:

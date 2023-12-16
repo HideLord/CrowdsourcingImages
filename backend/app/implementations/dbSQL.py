@@ -211,6 +211,16 @@ class SQLDatabase(DBInterface):
         else:
             raise TypeError("email and new_username must not be None and must be of type str.")
         
+    
+    def delete_user(self, email: str):
+        if email and isinstance(email, str):
+            with self.session.begin():
+                self.session.execute(
+                    self.users_table.delete().where(self.users_table.c.email == email)
+                )
+        else:
+            raise TypeError("email must not be None and must be of type str.")    
+    
 
     def get_user_info(self, email: str):
         if email and isinstance(email, str):

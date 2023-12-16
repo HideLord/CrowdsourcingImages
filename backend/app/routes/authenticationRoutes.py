@@ -51,6 +51,13 @@ def login():
         return "Invalid OTP", 400
     
 
+@bp.route("/logout", methods=["GET"])
+def logout():
+    session.clear()
+    
+    return "Successfully logged out", 200
+
+
 @bp.route("/is_authenticated", methods=["GET"])
 def is_authenticated():
     return jsonify({"isAuthenticated": _is_authenticated()}), 200

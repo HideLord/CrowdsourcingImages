@@ -28,30 +28,29 @@
     margin-left: 10px;
 }
 
-.progress-bar-background {
-    margin-top: 6px;
-    width: 80%;
-    background-color: #eee;
-    border-radius: 4px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+.button-div {
+    width: 10%;
+    min-width: 250px;
+    margin: 10px auto;
 }
 
-.progress-bar-fill {
-    border-radius: 4px;
-    height: 20px;
-    transition: width 0.3s ease;
-    position: absolute;
-    left: 0;
-    z-index: 0;
+.button-div button {
+    background-color: transparent;
+    color: red;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 200px;
+    margin: 5px auto;
+    padding: 10px;
 }
 
-.progress-bar-text {
-    color: black;
-    text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
-    font-size: 15px;
-    z-index: 1;
+.button-div button:hover {
+    background-color: #efefef96;
+}
+
+.button-div input {
+    padding: 5px;
+    width: 100%;
 }

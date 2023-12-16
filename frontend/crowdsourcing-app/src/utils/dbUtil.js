@@ -42,6 +42,22 @@ export async function updateUser(data) {
     return result;
 }
 
+export async function deleteUser() {
+    const link = encodeURIComponent(window.location.origin + "/login");
+    const response = await fetch(`http://localhost:5000/delete_user?link=${link}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.text();
+    return result;
+}
+
 export async function getCurrentUserInfo() {
     const response = await fetch("http://localhost:5000/user", {
         method: "GET",

@@ -21,6 +21,22 @@ export async function generateOTP(email) {
 }
 
 
+export async function logout() {
+    const response = await fetch("http://localhost:5000/logout", {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.text();
+    return result;
+}
+
+
 export async function isAuthenticated() {
     const response = await fetch("http://localhost:5000/is_authenticated", { credentials: "include" });
     if (!response.ok) {
