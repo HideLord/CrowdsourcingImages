@@ -45,9 +45,6 @@ export async function updateUser(data) {
 export async function getCurrentUserInfo() {
     const response = await fetch("http://localhost:5000/user", {
         method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
         credentials: "include",
     });
 
@@ -79,4 +76,20 @@ export async function updateFunds(cost) {
 
     const result = await response.text();
     return result;
+}
+
+
+export async function getImageUrls(numImages) {
+    const response = await fetch(`http://localhost:5000/get_image_urls?num_images=${numImages}`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.json();
+    return result.image_urls;
 }

@@ -8,6 +8,8 @@ from tempStorage import otps
 import secrets
 import urllib
 
+MAX_IMAGES = 10000
+
 limiter = Limiter(key_func=get_remote_address, 
                   storage_uri="memory://")
 bp = Blueprint("routes", __name__)
@@ -130,9 +132,49 @@ def update_funds():
 
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
+
+
+"""
+GET request to retrieve a number of image urls
+"""
+@bp.route("/get_image_urls", methods=["GET"])
+@limiter.limit("30/minute")
+def get_image_urls():
+    if not _is_authenticated():
+        return "Invalid or expired session token", 401
     
-    
-    
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+        db = current_app.config["db"]
+
+        num_images = request.args.get("num_images", type=int)
+        if num_images is None:
+            return "Number of images not specified.", 400
+        
+        if num_images > MAX_IMAGES:
+            return f"Too many images requested. Maximum is {MAX_IMAGES}.", 400
+
+        # Unlock the previously locked pages
+        if "archive_page_pks" in session:
+            locked_pks = session["archive_page_pks"]
+            if locked_pks:
+                db.unlock_archive_pages(locked_pks)
+
+        image_urls, pks = db.get_image_urls(num_images)
+        
+        # Store the new ones
+        session["archive_page_pks"] = pks
+
+        return jsonify({"image_urls": image_urls})
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+
+
 @bp.route("/generate_otp", methods=["POST"])
 def generate_otp():
     # This needs to be imported inside the request context.

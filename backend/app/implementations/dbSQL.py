@@ -7,11 +7,13 @@ from json import dumps
 from typing import Union
 from tqdm import tqdm
 from threading import Lock
+from random import shuffle
 
 from tempStorage import archive_pks_in_use, archive_pages
 
 import os
 import pandas as pd
+import time
 
 class SQLDatabase(DBInterface):
 
@@ -49,8 +51,8 @@ class SQLDatabase(DBInterface):
                                      Column("username", String),
                                      Column("instruction_count", Integer),
                                      Column("description_count", Integer),
-                                     Column("cash_limit", Float, default=10.0),
-                                     Column("cash_spent", Float, default=0.0))
+                                     Column("cash_limit", Float, server_default="10.0"),
+                                     Column("cash_spent", Float, server_default="0.0"))
             
         if ins.has_table(SQLDatabase.ARCHIVE_TABLE):
             self.archive_table = Table(SQLDatabase.ARCHIVE_TABLE, metadata, autoload_with=self.engine)
@@ -101,27 +103,34 @@ class SQLDatabase(DBInterface):
 
         pbar.close()
 
-
     def get_image_urls(self, num_images: int):
+        start_time = time.time()
+
         random_rows = []
 
+        db_start_time = time.time()
         with self.session.begin():
-            random_select = self.archive_table.select().order_by(func.random())
-            random_rows = self.session.execute(random_select).fetchall()
+            random_select = self.archive_table.select()
+            random_rows = self.session.execute(random_select).fetchmany((num_images // SQLDatabase.CHUNK_SIZE) + 10)
+        db_end_time = time.time()
+        print(f"Database query time: {db_end_time - db_start_time} seconds")
 
+        processing_start_time = time.time()
         with self.archive_lock:
             image_urls = []
             page_pks = []
             accumulated_images = 0
 
             for row in random_rows:
-                pk = int(row[self.archive_table.c.pk])
+                row = row._asdict()
+                pk = int(row["pk"])
 
                 if pk in archive_pks_in_use:
                     continue
 
-                if row[self.archive_table.c.available_count] > 0:
-                    row_image_urls = row[self.archive_table.c.image_urls].split(SQLDatabase.URL_SEPARATOR)
+                available_start_time = time.time()
+                if row["available_count"] > 0:
+                    row_image_urls = row["image_urls"].split(SQLDatabase.URL_SEPARATOR)
                     images_to_take = min(len(row_image_urls), num_images - accumulated_images)
                     image_urls.extend(row_image_urls[:images_to_take])
                     accumulated_images += images_to_take
@@ -129,14 +138,23 @@ class SQLDatabase(DBInterface):
                     page_pks.append(pk)
                     archive_pks_in_use.add(pk)
                     archive_pages[pk] = set(row_image_urls)
+                available_end_time = time.time()
+                print(f"Processing available_count for a row: {available_end_time - available_start_time} seconds")
 
                 if accumulated_images >= num_images:
                     break
+
+        processing_end_time = time.time()
+        print(f"Total processing time: {processing_end_time - processing_start_time} seconds")
+
+        end_time = time.time()
+        print(f"Total function time: {end_time - start_time} seconds")
 
         return image_urls, page_pks
     
 
     def unlock_archive_pages(self, pks: list):
+        print(f"Unlocking archive pages: {pks}")
         with self.session.begin(), self.archive_lock:
             for pk in pks:
                 if pk not in archive_pks_in_use:
@@ -148,7 +166,10 @@ class SQLDatabase(DBInterface):
                         self.archive_table.delete().where(self.archive_table.c.pk == pk)
                     )
                 else:
-                    updated_image_urls = SQLDatabase.URL_SEPARATOR.join(archive_pages[pk])
+                    shuffled_urls = list(archive_pages[pk])
+                    shuffle(shuffled_urls)
+
+                    updated_image_urls = SQLDatabase.URL_SEPARATOR.join(shuffled_urls)
                     self.session.execute(
                         self.archive_table.update().where(self.archive_table.c.pk == pk)\
                             .values(image_urls = updated_image_urls,

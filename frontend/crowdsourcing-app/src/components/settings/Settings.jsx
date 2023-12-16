@@ -52,6 +52,8 @@ function SettingsBody() {
 
     const [barColor, spentRatio] = getBarColor(userInfo.cash_spent, userInfo.cash_limit);
 
+    console.log(JSON.stringify(userInfo));
+
     return (
         <div>
             <div className="settings-body">

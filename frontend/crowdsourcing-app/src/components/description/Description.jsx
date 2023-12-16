@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./Description.css"
 import "../../App.css"
 import Authentication from "../authentication/Authentication";
@@ -8,7 +8,7 @@ import "react-tabs/style/react-tabs.css";
 import { Detail, calculateGPT4VPrice, sendGPT4VInstruction } from "../../utils/openAi"
 import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
 import checkFundsAndSend from "../../utils/fundsManager";
-import { storePair } from "../../utils/dbUtil"
+import { storePair, getImageUrls } from "../../utils/dbUtil"
 import ReactLoading from "react-loading";
 
 const INSTRUCTION = "Describe the image in detail.";
@@ -128,6 +128,8 @@ async function send(data) {
 
 
 function Method({ data }) {
+    const prevNumImages = useRef(null);
+
     return (
         <div className="margin">
             <Tabs>
@@ -141,7 +143,25 @@ function Method({ data }) {
                     <p className="margin-no-top">
                         Enter the number of images you'd like to caption, and the system will auto-choose them for you.
                     </p>
-                    <input className="rounded-corners margin-no-top" type="number" placeholder="Number of images" />
+                    <input
+                        className="rounded-corners margin-no-top"
+                        type="number"
+                        placeholder="Number of images"
+                        onBlur={async (e) => {
+                            if (prevNumImages.current == e.target.value) {
+                                return;
+                            }
+
+                            try {
+                                prevNumImages.current = e.target.value;
+                                const image_urls = await getImageUrls(e.target.value);
+
+                                data.setImages(image_urls);
+                                data.setStates(new Array(image_urls.length).fill(State.PENDING));
+                            } catch(error) {
+                                console.error("Could not retrieve the image urls: ", error);
+                            }
+                        }} />
                     <Options data={data} />
                 </TabPanel>
                 <TabPanel>
@@ -160,8 +180,9 @@ function Method({ data }) {
                         placeholder="Enter image URLs, separated by commas"
                         value={data.images.join(",\n\n")}
                         onChange={(e) => {
-                            data.setImages(parseTextArea(e.target.value));
-                            data.setStates(new Array(data.images.length).fill(State.PENDING));
+                            const image_urls = parseTextArea(e.target.value);
+                            data.setImages(image_urls);
+                            data.setStates(new Array(image_urls.length).fill(State.PENDING));
                         }}>
                     </textarea>
                     <Options data={data} />
