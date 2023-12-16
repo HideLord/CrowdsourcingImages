@@ -162,7 +162,7 @@ def login():
     link = request.args.get("link")
 
     if otp and otp in otps and otps[otp] == email:
-        session['email'] = email  # Store the email in session
+        session["email"] = email  # Store the email in session
 
         # Check if the email is new and create a user if so.
         from flask import current_app
@@ -170,6 +170,9 @@ def login():
         user_info = db.get_user_info(email)
         if not user_info: # user does not exist
             db.create_user(email, secrets.token_hex(16))
+
+        otps.pop(otp) # invalidate the OTP once it's been used
+
         return redirect(link)
     else:
         return "Invalid OTP", 400
@@ -177,7 +180,7 @@ def login():
 
 @bp.route("/is_authenticated", methods=["GET"])
 def is_authenticated():
-    return jsonify({'isAuthenticated': _is_authenticated()}), 200
+    return jsonify({"isAuthenticated": _is_authenticated()}), 200
 
 
 def _is_authenticated():

@@ -1,43 +1,160 @@
 from interfaces.dbInterface import DBInterface
-from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect, column
+from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect, column, func
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.sql.expression import not_
 
 from json import dumps
 from typing import Union
+from tqdm import tqdm
+from threading import Lock
+
+from tempStorage import archive_pks_in_use, archive_pages
+
+import os
+import pandas as pd
 
 class SQLDatabase(DBInterface):
 
-    PAIR_TABLE = 'pairs'
-    USER_TABLE = 'users'
+    PAIR_TABLE = "pairs"
+    USER_TABLE = "users"
+    ARCHIVE_TABLE = "archive"
+
+    URL_SEPARATOR = "<|URLSEP|>"
+    
+    CHUNK_SIZE = 10000
 
     def __init__(self, database_url):
-        self.engine = create_engine(database_url, echo=True)
+        self.engine = create_engine(database_url, echo=False)
         self.session = scoped_session(sessionmaker(bind=self.engine))
+        self.archive_lock = Lock()
 
         metadata = MetaData()
-
+        should_load_parquets = False
+        
         ins = inspect(self.engine)
         if ins.has_table(SQLDatabase.PAIR_TABLE):
             self.pairs_table = Table(SQLDatabase.PAIR_TABLE, metadata, autoload_with=self.engine)
         else: # Not exactly thread-safe, but the SQL underneath should be.
             self.pairs_table = Table(SQLDatabase.PAIR_TABLE, metadata,
-                                     Column('pk', Integer, primary_key=True, autoincrement=True),
-                                     Column('image_url', String),
-                                     Column('json', String))
+                                     Column("pk", Integer, primary_key=True, autoincrement=True),
+                                     Column("image_url", String),
+                                     Column("json", String))
             
         if ins.has_table(SQLDatabase.USER_TABLE):
             self.users_table = Table(SQLDatabase.USER_TABLE, metadata, autoload_with=self.engine)
         else:
             self.users_table = Table(SQLDatabase.USER_TABLE, metadata,
-                                     Column('pk', Integer, primary_key=True, autoincrement=True),
-                                     Column('email', String),
-                                     Column('username', String),
-                                     Column('instruction_count', Integer),
-                                     Column('description_count', Integer),
-                                     Column('cash_limit', Float, default=10.0),
-                                     Column('cash_spent', Float, default=0.0))
+                                     Column("pk", Integer, primary_key=True, autoincrement=True),
+                                     Column("email", String),
+                                     Column("username", String),
+                                     Column("instruction_count", Integer),
+                                     Column("description_count", Integer),
+                                     Column("cash_limit", Float, default=10.0),
+                                     Column("cash_spent", Float, default=0.0))
+            
+        if ins.has_table(SQLDatabase.ARCHIVE_TABLE):
+            self.archive_table = Table(SQLDatabase.ARCHIVE_TABLE, metadata, autoload_with=self.engine)
+        else:
+            self.archive_table = Table(SQLDatabase.ARCHIVE_TABLE, metadata,
+                                     Column("pk", Integer, primary_key=True, autoincrement=True),
+                                     Column("total_count", Integer),
+                                     Column("available_count", Integer),
+                                     Column("image_urls", String),
+                                     Column("separator", String, default=SQLDatabase.URL_SEPARATOR),)
+            should_load_parquets = True
             
         metadata.create_all(self.engine)
+        if should_load_parquets:
+            self._load_parquets()
+
+
+    def _load_parquets(self):
+        directory_path = os.path.join(os.path.dirname(__file__), "../archive/")
+        directory_path = os.path.normpath(directory_path)
+
+        files = [f for f in os.listdir(directory_path) if f.endswith(".parquet")]
+
+        for file_name in files:
+            file_path = os.path.join(directory_path, file_name)
+            self._insert_into_archive(pd.read_parquet(file_path))
+
+        
+    def _insert_into_archive(self, df):
+        num_chunks = (len(df) + SQLDatabase.CHUNK_SIZE - 1) // SQLDatabase.CHUNK_SIZE
+
+        pbar = tqdm(total=len(df), desc="Inserting URLs", unit="url")
+
+        for i in range(num_chunks):
+            df_chunk = df[i * SQLDatabase.CHUNK_SIZE:(i + 1) * SQLDatabase.CHUNK_SIZE]
+            chunk_urls = SQLDatabase.URL_SEPARATOR.join(df_chunk["url"].astype(str))
+
+            with self.session.begin():
+                self.session.execute(
+                    self.archive_table.insert().values(
+                        total_count=len(df_chunk),
+                        available_count=len(df_chunk),
+                        image_urls=chunk_urls,
+                    )
+                )
+
+            pbar.update(len(df_chunk))
+
+        pbar.close()
+
+
+    def get_image_urls(self, num_images: int):
+        random_rows = []
+
+        with self.session.begin():
+            random_select = self.archive_table.select().order_by(func.random())
+            random_rows = self.session.execute(random_select).fetchall()
+
+        with self.archive_lock:
+            image_urls = []
+            page_pks = []
+            accumulated_images = 0
+
+            for row in random_rows:
+                pk = int(row[self.archive_table.c.pk])
+
+                if pk in archive_pks_in_use:
+                    continue
+
+                if row[self.archive_table.c.available_count] > 0:
+                    row_image_urls = row[self.archive_table.c.image_urls].split(SQLDatabase.URL_SEPARATOR)
+                    images_to_take = min(len(row_image_urls), num_images - accumulated_images)
+                    image_urls.extend(row_image_urls[:images_to_take])
+                    accumulated_images += images_to_take
+
+                    page_pks.append(pk)
+                    archive_pks_in_use.add(pk)
+                    archive_pages[pk] = set(row_image_urls)
+
+                if accumulated_images >= num_images:
+                    break
+
+        return image_urls, page_pks
+    
+
+    def unlock_archive_pages(self, pks: list):
+        with self.session.begin(), self.archive_lock:
+            for pk in pks:
+                if pk not in archive_pks_in_use:
+                    continue
+                archive_pks_in_use.remove(pk)
+                
+                if pk not in archive_pages:
+                    self.session.execute(
+                        self.archive_table.delete().where(self.archive_table.c.pk == pk)
+                    )
+                else:
+                    updated_image_urls = SQLDatabase.URL_SEPARATOR.join(archive_pages[pk])
+                    self.session.execute(
+                        self.archive_table.update().where(self.archive_table.c.pk == pk)\
+                            .values(image_urls = updated_image_urls,
+                                    available_count = len(archive_pages[pk]))
+                    )
+                    archive_pages.pop(pk)
 
 
     def store_pair(self, image_url: str, data: Union[str, dict, list]):
@@ -88,7 +205,7 @@ class SQLDatabase(DBInterface):
         if email and count and isinstance(email, str) and isinstance(count, int):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(instruction_count=column('instruction_count') + count)
+                    self.users_table.update().where(self.users_table.c.email == email).values(instruction_count=column("instruction_count") + count)
                 )
         else:
             raise TypeError("email and count must not be None and of type str and int.")
@@ -98,7 +215,7 @@ class SQLDatabase(DBInterface):
         if email and count and isinstance(email, str) and isinstance(count, int):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(description_count=column('description_count') + count)
+                    self.users_table.update().where(self.users_table.c.email == email).values(description_count=column("description_count") + count)
                 )
         else:
             raise TypeError("email and count must not be None and of type str and int.")
@@ -108,7 +225,7 @@ class SQLDatabase(DBInterface):
         if email and cost and isinstance(email, str) and isinstance(cost, float):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(cash_spent=column('cash_spent') + cost)
+                    self.users_table.update().where(self.users_table.c.email == email).values(cash_spent=column("cash_spent") + cost)
                 )
         else:
             raise TypeError("email and cost must not be None and of type str and float.")

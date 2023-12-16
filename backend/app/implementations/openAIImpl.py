@@ -20,8 +20,8 @@ class OpenAIImpl(OpenAIInterface):
     """
     @staticmethod
     def calculate_price(response: ChatCompletion) -> float:
-        prompt_cost = response.usage['prompt_tokens'] * OpenAIImpl._PROMPT_PRICE_1K / 1000.0
-        output_cost = response.usage['completion_tokens'] * OpenAIImpl._OUTPUT_PRICE_1K / 1000.0
+        prompt_cost = response.usage["prompt_tokens"] * OpenAIImpl._PROMPT_PRICE_1K / 1000.0
+        output_cost = response.usage["completion_tokens"] * OpenAIImpl._OUTPUT_PRICE_1K / 1000.0
 
         return output_cost + prompt_cost
 

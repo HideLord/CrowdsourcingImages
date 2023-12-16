@@ -8,7 +8,7 @@ export default function Authentication({ children }) {
 
     if (isLoading) {
         return (
-            <CenteredSpinner/>
+            <CenteredSpinner />
         );
     }
 

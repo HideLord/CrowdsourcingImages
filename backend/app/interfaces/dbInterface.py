@@ -28,3 +28,11 @@ class DBInterface(ABC):
     @abstractmethod
     def update_funds(self, email: str, cost: float):
         pass
+
+    @abstractmethod
+    def unlock_archive_pages(self, pks: list):
+        pass
+
+    @abstractmethod
+    def get_image_urls(self, num_images: int):
+        pass

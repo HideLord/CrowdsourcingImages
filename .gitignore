@@ -1,5 +1,6 @@
 # backend
 backend/venv
+backend/app/archive
 backend/app/__pycache__
 backend/app/implementations/__pycache__
 backend/app/interfaces/__pycache__

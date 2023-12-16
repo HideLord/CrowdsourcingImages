@@ -6,7 +6,7 @@ export default function useAuthStatus() {
     const [isAuthenticatedVar, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        if (isLoading) { // Once it's loaded (authenticated), we don't want to check again.
+        if (isLoading) { // Once it"s loaded (authenticated), we don"t want to check again.
             isAuthenticated().then(authenticated => {
                 setIsAuthenticated(authenticated);
                 setIsLoading(false);

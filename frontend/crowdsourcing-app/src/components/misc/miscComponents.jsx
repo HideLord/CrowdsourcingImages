@@ -7,7 +7,7 @@ export function NumberInput({ label, value, onChange }) {
     const randId = Math.random();
     return (
         <label htmlFor={`number-input-${randId}`} className="margin-no-top">
-            {label} 
+            {label}
             <input
                 className="number-input rounded-corners"
                 id={`number-input-${randId}`}

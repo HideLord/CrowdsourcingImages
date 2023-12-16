@@ -151,7 +151,7 @@ function InstructionBody() {
 
             <div className="column-div-half">
                 <div className="margin">
-                    <Image imageUrl={imageUrl}/>
+                    <Image imageUrl={imageUrl} />
                 </div>
                 <TextField
                     placeholder="Enter image URL"
@@ -171,7 +171,7 @@ function InstructionBody() {
 export default function Instruction() {
     return (
         <Authentication>
-            <InstructionBody/>
+            <InstructionBody />
         </Authentication>
     )
 }

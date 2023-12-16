@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import './Description.css'
-import '../../App.css'
-import Authentication from '../authentication/Authentication';
-import Image from '../image/Image';
+import React, { useState } from "react";
+import "./Description.css"
+import "../../App.css"
+import Authentication from "../authentication/Authentication";
+import Image from "../image/Image";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { Detail, calculateGPT4VPrice, sendGPT4VInstruction } from "../../utils/openAi"
 import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
 import checkFundsAndSend from "../../utils/fundsManager";
 import { storePair } from "../../utils/dbUtil"
-import ReactLoading from 'react-loading';
+import ReactLoading from "react-loading";
 
 const INSTRUCTION = "Describe the image in detail.";
 
@@ -23,7 +23,7 @@ const State = {
 
 
 function parseTextArea(imageUrls) {
-    return imageUrls.split(',').map(s => s.trim()).filter(Boolean);
+    return imageUrls.split(",").map(s => s.trim()).filter(Boolean);
 }
 
 
@@ -78,21 +78,21 @@ async function send(data) {
         if (data.states[i] !== State.PENDING && data.states[i] !== State.FAILURE) {
             return;
         }
-    
+
         const imageUrl = data.images[i];
-    
+
         data.setStates(prevStates => {
             const newStates = [...prevStates];
             newStates[i] = State.SENDING;
             return newStates;
         });
-    
+
         try {
             const response = await checkFundsAndSend(calculateGPT4VPrice, sendGPT4VInstruction, [data.apiKey, imageUrl, INSTRUCTION, data.highRes ? Detail.HIGH : Detail.LOW]);
             const storeData = createStorePairData(INSTRUCTION, data.highRes, response);
-    
+
             storePair(imageUrl, storeData);
-    
+
             data.setStates(prevStates => {
                 const newStates = [...prevStates];
                 newStates[i] = State.SUCCESS;
@@ -100,7 +100,7 @@ async function send(data) {
             });
         } catch (error) {
             console.error("Error occurred in sendGPT4VInstruction:", error);
-    
+
             data.setStates(prevStates => {
                 const newStates = [...prevStates];
                 newStates[i] = State.FAILURE;
@@ -158,7 +158,7 @@ function Method({ data }) {
                     <textarea
                         className="rounded-corners margin-no-top textarea long-textarea"
                         placeholder="Enter image URLs, separated by commas"
-                        value={data.images.join(',\n\n')}
+                        value={data.images.join(",\n\n")}
                         onChange={(e) => {
                             data.setImages(parseTextArea(e.target.value));
                             data.setStates(new Array(data.images.length).fill(State.PENDING));
@@ -167,8 +167,8 @@ function Method({ data }) {
                     <Options data={data} />
                 </TabPanel>
             </Tabs>
-            <button 
-                className="blue-button margin-no-top go-button" 
+            <button
+                className="blue-button margin-no-top go-button"
                 onClick={async () => send(data)}
                 disabled={data.isSendDisabled}>
                 Send
@@ -215,14 +215,14 @@ function DescriptionBody() {
     }
 
     return (
-        <div className='column-div'>
+        <div className="column-div">
             <Method data={data}></Method>
-            <div className="column-div image-grid margin-no-top">   
+            <div className="column-div image-grid margin-no-top">
                 {images.map((imageUrl, index) => (
-                    <div key={index} style={{position:'relative'}}>
-                        {data.states[index] === State.SENDING && <><div className="overlay"/><div className='sending-spinner'><ReactLoading type={'spin'} color={'DarkSeaGreen'} height={50} width={50} /></div></>}
-                        {data.states[index] === State.SUCCESS && <><div className="overlay"/><div className='check'><label>✔️</label></div></>}
-                        {data.states[index] === State.FAILURE && <><div className="overlay"/><div className='cross'><label>❌</label></div></>}
+                    <div key={index} style={{ position: "relative" }}>
+                        {data.states[index] === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
+                        {data.states[index] === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
+                        {data.states[index] === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
                         <Image imageUrl={imageUrl} imageClass="image-256" wrapperClass="image-wrapper" />
                     </div>
                 ))}

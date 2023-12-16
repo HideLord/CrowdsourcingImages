@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import "./Login.css";
 import "../../App.css";
-import { generateOTP } from '../../utils/loginUtil'
+import { generateOTP } from "../../utils/loginUtil"
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [isGoDisabled, setGoDisabled] = useState(false);
     const [isSent, setIsSent] = useState(false);
-    
+
     const handleGo = async (event) => {
         event.preventDefault();
 
@@ -26,7 +26,7 @@ export default function Login() {
     return (
         <div>
             <picture>
-                <source srcSet="/logo192.png" media="(max-width: 1023px)"/>
+                <source srcSet="/logo192.png" media="(max-width: 1023px)" />
                 <img src="/logo512.png" alt="Logo" className="logo-image" />
             </picture>
             <form onSubmit={handleGo} className="login-container">
@@ -38,11 +38,11 @@ export default function Login() {
                     placeholder="Email Address"
                     disabled={isGoDisabled}
                 />
-                <button 
+                <button
                     type="submit"
                     disabled={isGoDisabled}
                     className="blue-button long-button">
-                        Go
+                    Go
                 </button>
                 {isSent && <p className="notification-text">Email sent! Please check your inbox or spam folder.</p>}
             </form>

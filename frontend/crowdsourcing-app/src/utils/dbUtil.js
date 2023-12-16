@@ -1,14 +1,14 @@
 export async function storePair(imageUrl, data) {
-    const response = await fetch('http://localhost:5000/store_pair', {
-        method: 'POST',
+    const response = await fetch("http://localhost:5000/store_pair", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
             image_url: imageUrl,
             data: data,
         }),
-        credentials: 'include',
+        credentials: "include",
     });
 
     if (!response.ok) {
@@ -22,15 +22,15 @@ export async function storePair(imageUrl, data) {
 
 
 export async function updateUser(data) {
-    const response = await fetch('http://localhost:5000/update_user', {
-        method: 'POST',
+    const response = await fetch("http://localhost:5000/update_user", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
             data: data,
         }),
-        credentials: 'include',
+        credentials: "include",
     });
 
     if (!response.ok) {
@@ -43,12 +43,12 @@ export async function updateUser(data) {
 }
 
 export async function getCurrentUserInfo() {
-    const response = await fetch('http://localhost:5000/user', {
-        method: 'GET',
+    const response = await fetch("http://localhost:5000/user", {
+        method: "GET",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
     });
 
     if (!response.ok) {
@@ -61,15 +61,15 @@ export async function getCurrentUserInfo() {
 
 
 export async function updateFunds(cost) {
-    const response = await fetch('http://localhost:5000/update_funds', {
-        method: 'POST',
+    const response = await fetch("http://localhost:5000/update_funds", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
             cost: cost,
         }),
-        credentials: 'include',
+        credentials: "include",
     });
 
     if (!response.ok) {
