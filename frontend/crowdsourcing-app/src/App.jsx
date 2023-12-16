@@ -9,11 +9,14 @@ import Settings from "./components/settings/Settings";
 import Description from "./components/description/Description";
 import { DescriptionProvider } from "./contexts/DescriptionContext/DescriptionContext";
 import { InstructionProvider } from "./contexts/InstructionContext/InstructionContext";
-import { OptionsContext, OptionsProvider } from "./contexts/OptionsContext/OptionsContext";
+import { OptionsProvider } from "./contexts/OptionsContext/OptionsContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     return (
         <div className="App">
+            <ToastContainer/>
             <OptionsProvider>
             <InstructionProvider>   
             <DescriptionProvider>

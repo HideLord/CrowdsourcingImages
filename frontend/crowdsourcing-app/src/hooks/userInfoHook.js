@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getCurrentUserInfo } from "../utils/dbUtil";
+import { toast } from "react-toastify";
 
 export default function useUserInfo() {
     const [isLoading, setIsLoading] = useState(true);
@@ -11,7 +12,7 @@ export default function useUserInfo() {
                 setUserInfo(info);
                 setIsLoading(false);
             }).catch(error => {
-                console.error("Failed to fetch user info: ", error);
+                toast.error(`Failed to fetch user info: ${error}`);
                 setIsLoading(false);
             });
         }

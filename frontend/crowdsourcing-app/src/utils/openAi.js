@@ -53,11 +53,8 @@ export function getGPT4Vpayload(imageUrl, instruction, detail, maxtokens = 300) 
 }
 
 export async function sendGPT4VInstruction(apiKey, image, instruction, detail = Detail.LOW) {
-    console.log("Starting sendGPT4VInstruction...");
-
     if (!image || !instruction) {
-        console.log("image or instruction is not provided");
-        return;
+        throw new TypeError("Please provide image and instruction.");
     }
 
     let imageUrl;
@@ -71,9 +68,7 @@ export async function sendGPT4VInstruction(apiKey, image, instruction, detail = 
     }
 
     let payload = getGPT4Vpayload(imageUrl, instruction, detail);
-    console.log("Payload created:", payload);
 
-    console.log("Sending request to the API...");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -89,8 +84,6 @@ export async function sendGPT4VInstruction(apiKey, image, instruction, detail = 
         throw error;
     }
 
-    console.log("Received response, parsing...");
     const json = await response.json();
-    console.log("Parsed response:", json);
     return json;
 }

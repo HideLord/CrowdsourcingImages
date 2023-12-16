@@ -5,12 +5,13 @@ import Authentication from "../authentication/Authentication";
 import useUserInfo from "../../hooks/userInfoHook";
 import CenteredSpinner from "../centeredSpinner/CenteredSpinner";
 import { updateUser } from "../../utils/dbUtil";
+import { toast } from "react-toastify";
 
 function SettingsBody() {
     const [isEditingUsername, setIsEditingUsername] = useState(false);
     const [isEditingLimit, setIsEditingLimit] = useState(false);
 
-    let [isLoading, userInfo, setUserInfo] = useUserInfo();
+    let [isLoading, userInfo, setUserInfo] = useUserInfo(true);
 
     if (isLoading) {
         return <CenteredSpinner />;

@@ -12,6 +12,7 @@ import { storePair, getImageUrls } from "../../utils/dbUtil"
 import ReactLoading from "react-loading";
 import { State, DescriptionContext } from "../../contexts/DescriptionContext/DescriptionContext";
 import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
+import { toast } from "react-toastify";
 
 const INSTRUCTION = "Describe the image in detail.";
 
@@ -123,7 +124,7 @@ async function send(data) {
 
 function Method({ data }) {
     const prevNumImages = useRef(null);
-    const formattedUrls = data.images.join(",\n\n");
+    const [formattedUrls, setFormattedUrls] = useState(data.images.join(",\n\n"));
 
     return (
         <div className="margin">
@@ -154,7 +155,7 @@ function Method({ data }) {
                                 data.setImages(image_urls);
                                 data.setStates(new Array(image_urls.length).fill(State.PENDING));
                             } catch(error) {
-                                console.error("Could not retrieve the image urls: ", error);
+                                toast.error(`Could not retrieve the image urls: ${error}`);
                             }
                         }} />
                     <Options data={data} />
@@ -174,6 +175,9 @@ function Method({ data }) {
                         className="rounded-corners margin-no-top textarea long-textarea"
                         placeholder="Enter image URLs, separated by commas"
                         value={formattedUrls}
+                        onChange={(e) => {
+                            setFormattedUrls(e.target.value.replace(/,(?!\n)/gm, ",\n\n"));
+                        }}
                         onBlur={(e) => {
                             const image_urls = parseTextArea(e.target.value);
                             data.setImages(image_urls);

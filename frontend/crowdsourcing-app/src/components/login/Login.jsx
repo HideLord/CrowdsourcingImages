@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Login.css";
 import "../../App.css";
 import { generateOTP } from "../../utils/loginUtil"
+import { toast } from "react-toastify";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -13,13 +14,12 @@ export default function Login() {
 
         try {
             setGoDisabled(true);
-            const result = await generateOTP(email);
+            await generateOTP(email);
             setGoDisabled(false);
             setIsSent(true);
-            console.log(result);
         } catch (error) {
             setGoDisabled(false);
-            console.error(error);
+            toast.error(`Failed to generate OTP: ${error}`);
         }
     };
 

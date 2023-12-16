@@ -11,6 +11,7 @@ import Image from "../image/Image";
 import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
 import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
 import { InstructionContext } from "../../contexts/InstructionContext/InstructionContext";
+import { toast } from "react-toastify";
 
 function createStorePairData(instruction, highRes, response) {
     let data = {};
@@ -40,10 +41,12 @@ function SendButton({ isSendDisabled, setSendDisabled, apiKey, imageUrl, instruc
                         storePair(imageUrl, data);
                     })
                     .catch(async (error) => {
-                        console.error("Error occurred in sendGPT4VInstruction:", error);
                         let errorResponse = { status: error.message };
                         if (error.response) {
                             errorResponse.body = await error.response.json();
+                            toast.error(`Error occurred while sending image: ${errorResponse.body.error.message}`);
+                        } else {
+                            toast.error(`Error occurred while sending image: ${error}`);
                         }
                         setResponse(JSON.stringify(errorResponse, null, 4));
                         setSendDisabled(false);
