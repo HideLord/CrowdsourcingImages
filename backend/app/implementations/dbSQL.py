@@ -22,6 +22,7 @@ class SQLDatabase(DBInterface):
     ARCHIVE_TABLE = "archive"
 
     URL_SEPARATOR = "<|URLSEP|>"
+    URL_COLUMN = "url"
     
     CHUNK_SIZE = 10000
 
@@ -88,7 +89,7 @@ class SQLDatabase(DBInterface):
 
         for i in range(num_chunks):
             df_chunk = df[i * SQLDatabase.CHUNK_SIZE:(i + 1) * SQLDatabase.CHUNK_SIZE]
-            chunk_urls = SQLDatabase.URL_SEPARATOR.join(df_chunk["url"].astype(str))
+            chunk_urls = SQLDatabase.URL_SEPARATOR.join(df_chunk[SQLDatabase.URL_COLUMN].astype(str))
 
             with self.session.begin():
                 self.session.execute(
@@ -223,7 +224,23 @@ class SQLDatabase(DBInterface):
             raise TypeError("email must not be None and must be of type str.")    
     
 
-    def get_user_info(self, email: str):
+    def get_ordered_users(self):
+        columns_to_select = [
+            self.users_table.c.username,
+            self.users_table.c.cash_spent,
+            self.users_table.c.instruction_count,
+            self.users_table.c.description_count,   
+        ]
+
+        with self.session.begin():
+            return self.session.execute(
+                        self.users_table.select()
+                            .with_only_columns(*columns_to_select)
+                            .order_by(self.users_table.c.cash_spent.desc())
+                    ).fetchall()
+
+
+    def get_user(self, email: str):
         if email and isinstance(email, str):
             with self.session.begin():
                 return self.session.execute(
@@ -237,7 +254,9 @@ class SQLDatabase(DBInterface):
         if email and count and isinstance(email, str) and isinstance(count, int):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(instruction_count=column("instruction_count") + count)
+                    self.users_table.update()
+                        .where(self.users_table.c.email == email)
+                        .values(instruction_count=func.coalesce(column("instruction_count"), 0) + count)
                 )
         else:
             raise TypeError("email and count must not be None and of type str and int.")
@@ -247,7 +266,9 @@ class SQLDatabase(DBInterface):
         if email and count and isinstance(email, str) and isinstance(count, int):
             with self.session.begin():
                 self.session.execute(
-                    self.users_table.update().where(self.users_table.c.email == email).values(description_count=column("description_count") + count)
+                    self.users_table.update()
+                        .where(self.users_table.c.email == email)
+                        .values(description_count=func.coalesce(column("description_count"), 0) + count)
                 )
         else:
             raise TypeError("email and count must not be None and of type str and int.")

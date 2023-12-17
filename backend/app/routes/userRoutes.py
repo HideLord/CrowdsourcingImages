@@ -1,4 +1,4 @@
-from flask import request, session, redirect
+from flask import request, session, jsonify
 from werkzeug.exceptions import BadRequest
 
 from initRoutes import bp, limiter
@@ -76,7 +76,7 @@ def user():
         from flask import current_app
 
         db = current_app.config["db"]
-        user_info = db.get_user_info(session["email"])
+        user_info = db.get_user(session["email"])
 
         return user_info._asdict(), 200
 
@@ -107,6 +107,28 @@ def update_funds():
         db.update_funds(email, cost)
 
         return "Username successfully updated", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+    
+
+"""
+GET request used to update a user's funds.
+"""
+@bp.route("/get_ordered_users", methods=["GET"])
+@limiter.limit("120/minute")
+def get_ordered_users():
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        db = current_app.config["db"]
+        result = db.get_ordered_users()
+
+        return jsonify({"users": [user._asdict() for user in result]}), 200
 
     except BadRequest as e:
         return str(e), 400

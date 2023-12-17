@@ -15,7 +15,7 @@ function SettingsBody() {
     const [isEditingUsername, setIsEditingUsername] = useState(false);
     const [isEditingLimit, setIsEditingLimit] = useState(false);
     const [showDeleteInput, setShowDeleteInput] = useState(false);
-    const [usernameInput, setUsernameInput] = useState('');
+    const [usernameInput, setUsernameInput] = useState("");
     const deleteInputRef = useRef(null);
     useEffect(() => {
         if (showDeleteInput) {

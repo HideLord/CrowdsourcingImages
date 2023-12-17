@@ -40,7 +40,7 @@ def login():
         # Check if the email is new and create a user if so.
         from flask import current_app
         db = current_app.config["db"]
-        user_info = db.get_user_info(email)
+        user_info = db.get_user(email)
         if not user_info: # user does not exist
             db.create_user(email, secrets.token_hex(16))
 

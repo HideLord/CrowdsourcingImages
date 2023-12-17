@@ -82,7 +82,7 @@ async function send(data) {
             return;
         }
 
-        data.setCashSpentThisSession(prev => { 
+        data.setCashSpentThisSession(prev => {
             const spent = prev + estimatedPrice;
             totalSpent = spent;
             return spent;
@@ -100,7 +100,7 @@ async function send(data) {
             const response = await checkFundsAndSend(calculateGPT4VPrice, sendGPT4VInstruction, [data.apiKey, imageUrl, INSTRUCTION, data.highRes ? Detail.HIGH : Detail.LOW]);
             const storeData = createStorePairData(INSTRUCTION, data.highRes, response);
 
-            data.setCashSpentThisSession(prev => { 
+            data.setCashSpentThisSession(prev => {
                 const spent = prev - estimatedPrice + calculateGPT4VPrice(response);
                 totalSpent = spent;
                 return spent;
@@ -116,7 +116,7 @@ async function send(data) {
         } catch (error) {
             console.error("Error occurred in sendGPT4VInstruction:", error);
 
-            data.setCashSpentThisSession(prev => { 
+            data.setCashSpentThisSession(prev => {
                 const spent = prev - estimatedPrice;
                 totalSpent = spent;
                 return spent;
@@ -207,30 +207,13 @@ function Method({ data }) {
                         step="0.01"
                         disabled={data.isSendDisabled}
                         value={data.cashLimitThisSession}
-                        onChange={(e) => { data.setCashLimitThisSession(parseFloat(e.target.value)); }}
-                        onBlur={async (e) => {
-                            if (prevNumImages.current == 10000) {
-                                return;
-                            }
-
-                            try {
-                                prevNumImages.current = 10000;
-                                data.setNumImages(10000);
-                                const image_urls = await getImageUrls(10000);
-
-                                data.setImages(image_urls);
-                                data.setStates(new Array(image_urls.length).fill(State.PENDING));
-                            } catch (error) {
-                                prevNumImages.current = null;
-                                toast.error(`Could not retrieve the image urls: ${error}`);
-                            }
-                        }} />
+                        onChange={(e) => { data.setCashLimitThisSession(parseFloat(e.target.value)); }} />
                     {data.isSendDisabled && data.cashLimitThisSession &&
                         <div className="margin-no-top go-button">
                             <ProgressBar
-                                width='100%'
+                                width="100%"
                                 ratio={Math.min(1.0, data.cashSpentThisSession / data.cashLimitThisSession)}
-                                barColor={'#77DD77'}
+                                barColor={"#77DD77"}
                                 text={`${data.cashSpentThisSession.toFixed(2)}/${data.cashLimitThisSession.toFixed(2)}`}
                             />
                         </div>
