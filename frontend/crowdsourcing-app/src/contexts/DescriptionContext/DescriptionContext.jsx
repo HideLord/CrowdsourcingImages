@@ -33,6 +33,7 @@ export function DescriptionProvider({ children }) {
     const [currentPage, setCurrentPage] = useState(0);
     const [cashLimitThisSession, setCashLimitThisSession] = useState(null);
     const [cashSpentThisSession, setCashSpentThisSession] = useState(0.00);
+    const [numImages, setNumImages] = useState(null);
 
     const value = {
         images, setImages,
@@ -41,6 +42,7 @@ export function DescriptionProvider({ children }) {
         currentPage, setCurrentPage,
         cashLimitThisSession, setCashLimitThisSession,
         cashSpentThisSession, setCashSpentThisSession,
+        numImages, setNumImages,
     };
 
     return (

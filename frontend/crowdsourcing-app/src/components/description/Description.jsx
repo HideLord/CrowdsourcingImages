@@ -149,7 +149,7 @@ async function send(data) {
 
 
 function Method({ data }) {
-    const prevNumImages = useRef(null);
+    const prevNumImages = useRef(data.numImages);
     const [formattedUrls, setFormattedUrls] = useState(data.images.join(",\n\n"));
 
     return (
@@ -172,6 +172,8 @@ function Method({ data }) {
                         min="1"
                         max="10000"
                         disabled={data.isSendDisabled}
+                        value={data.numImages}
+                        onChange={(e) => { data.setNumImages(e.target.value); }}
                         onBlur={async (e) => {
                             if (prevNumImages.current == e.target.value) {
                                 return;
@@ -213,6 +215,7 @@ function Method({ data }) {
 
                             try {
                                 prevNumImages.current = 10000;
+                                data.setNumImages(10000);
                                 const image_urls = await getImageUrls(10000);
 
                                 data.setImages(image_urls);
@@ -283,9 +286,15 @@ function DescriptionBody() {
         currentPage, setCurrentPage,
         cashLimitThisSession, setCashLimitThisSession,
         cashSpentThisSession, setCashSpentThisSession,
+        numImages, setNumImages,
     } = useContext(DescriptionContext);
 
     const imagesToShow = images.slice(
+        currentPage * IMAGES_PER_PAGE,
+        (currentPage + 1) * IMAGES_PER_PAGE
+    );
+
+    const statesToShow = states.slice(
         currentPage * IMAGES_PER_PAGE,
         (currentPage + 1) * IMAGES_PER_PAGE
     );
@@ -300,6 +309,7 @@ function DescriptionBody() {
         isSendDisabled, setSendDisabled,
         cashLimitThisSession, setCashLimitThisSession,
         cashSpentThisSession, setCashSpentThisSession,
+        numImages, setNumImages,
     }
 
     return (
@@ -308,9 +318,9 @@ function DescriptionBody() {
             <div className="column-div image-grid margin-no-top">
                 {imagesToShow.map((imageUrl, index) => (
                     <div key={index} style={{ position: "relative" }}>
-                        {data.states[index] === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
-                        {data.states[index] === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
-                        {data.states[index] === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
+                        {statesToShow[index] === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
+                        {statesToShow[index] === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
+                        {statesToShow[index] === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
                         <Image imageUrl={imageUrl} imageClass="image-256" wrapperClass="image-wrapper" />
                     </div>
                 ))}
