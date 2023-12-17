@@ -103,6 +103,7 @@ class SQLDatabase(DBInterface):
 
         pbar.close()
 
+
     def get_image_urls(self, num_images: int):
         start_time = time.time()
 
