@@ -30,11 +30,13 @@ export function DescriptionProvider({ children }) {
     ]);
     const [states, setStates] = useState(new Array(images.length).fill(State.PENDING));
     const [numThreads, setNumThreads] = useState(8);
+    const [currentPage, setCurrentPage] = useState(0);
 
     const value = {
         images, setImages,
         states, setStates,
         numThreads, setNumThreads,
+        currentPage, setCurrentPage,
     };
 
     return (

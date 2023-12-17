@@ -15,7 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     return (
-        <div className="App">
+        <div className="App hide-scrollbar">
             <ToastContainer/>
             <OptionsProvider>
             <InstructionProvider>   

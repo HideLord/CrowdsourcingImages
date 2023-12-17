@@ -133,7 +133,7 @@ function SettingsBody() {
                             ref={deleteInputRef}
                             className="rounded-corners"
                             type="text"
-                            placeholder="Enter your username to confirm"
+                            placeholder="Enter username to confirm"
                             value={usernameInput}
                             onChange={(e) => setUsernameInput(e.target.value)}
                             onKeyUp={async (e) => {

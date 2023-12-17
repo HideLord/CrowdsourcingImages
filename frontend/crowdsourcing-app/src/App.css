@@ -1,7 +1,13 @@
 .App {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+}
+
+*{
+    -ms-overflow-style: none;
+}
+::-webkit-scrollbar {
+    display: none;
 }
 
 .rounded-corners {

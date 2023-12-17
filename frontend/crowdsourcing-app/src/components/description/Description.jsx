@@ -15,6 +15,7 @@ import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
 import { toast } from "react-toastify";
 
 const INSTRUCTION = "Describe the image in detail.";
+const IMAGES_PER_PAGE = 48;
 
 
 function parseTextArea(imageUrls) {
@@ -154,7 +155,7 @@ function Method({ data }) {
 
                                 data.setImages(image_urls);
                                 data.setStates(new Array(image_urls.length).fill(State.PENDING));
-                            } catch(error) {
+                            } catch (error) {
                                 toast.error(`Could not retrieve the image urls: ${error}`);
                             }
                         }} />
@@ -211,7 +212,13 @@ function DescriptionBody() {
         images, setImages,
         states, setStates,
         numThreads, setNumThreads,
+        currentPage, setCurrentPage,
     } = useContext(DescriptionContext);
+
+    const imagesToShow = images.slice(
+        currentPage * IMAGES_PER_PAGE,
+        (currentPage + 1) * IMAGES_PER_PAGE
+    );
 
     const data = {
         images, setImages,
@@ -224,10 +231,10 @@ function DescriptionBody() {
     }
 
     return (
-        <div className="column-div">
+        <div className="column-div hide-scrollbar">
             <Method data={data}></Method>
             <div className="column-div image-grid margin-no-top">
-                {images.map((imageUrl, index) => (
+                {imagesToShow.map((imageUrl, index) => (
                     <div key={index} style={{ position: "relative" }}>
                         {data.states[index] === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
                         {data.states[index] === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
@@ -236,7 +243,25 @@ function DescriptionBody() {
                     </div>
                 ))}
             </div>
-        </div>
+            <div className="page-control">
+                <button
+                    onClick={() => {
+                        setCurrentPage((prev) => (prev > 0 ? prev - 1 : 0));
+                    }}
+                    disabled={currentPage === 0}
+                >
+                    &lt;
+                </button>
+                <button
+                    onClick={() => {
+                        setCurrentPage((prev) => (prev + 1) < Math.ceil(data.images.length / IMAGES_PER_PAGE) ? prev + 1 : prev);
+                    }}
+                    disabled={currentPage >= Math.ceil(data.images.length / IMAGES_PER_PAGE) - 1}
+                >
+                    &gt;
+                </button>
+            </div>
+        </div >
     )
 }
 
