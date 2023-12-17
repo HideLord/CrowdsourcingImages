@@ -93,11 +93,13 @@ def get_image_urls():
 Removes image_url from the stored pages of the user.
 """
 def _update_archive(image_url: str):
+    print(f"Updating archive with {image_url}")
     locked_pks = session.get(ARCHIVE_PAGE_PKS)
     if locked_pks:
         for pk in locked_pks:
             page = archive_pages.get(pk)
-            if page:
+            if page and image_url in page:
                 page.remove(image_url)
+                print(f"Removing {image_url}")
                 if len(page) == 0:
                     archive_pages.pop(pk)

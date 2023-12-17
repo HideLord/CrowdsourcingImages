@@ -1,21 +1,21 @@
-import React, { useState, useRef, useContext } from "react";
-import "./Description.css"
-import "../../App.css"
+import React, { useContext, useRef, useState } from "react";
+import ReactLoading from "react-loading";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
+import { toast } from "react-toastify";
+import "../../App.css";
+import { DescriptionContext, State } from "../../contexts/DescriptionContext/DescriptionContext";
+import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
+import { getImageUrls, storePair } from "../../utils/dbUtil";
+import checkFundsAndSend from "../../utils/fundsManager";
+import { Detail, calculateGPT4VPrice, estimateGPT4VPrice, sendGPT4VInstruction } from "../../utils/openAi";
 import Authentication from "../authentication/Authentication";
 import Image from "../image/Image";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import "react-tabs/style/react-tabs.css";
-import { Detail, calculateGPT4VPrice, sendGPT4VInstruction } from "../../utils/openAi"
-import { NumberInput, CheckBox, TextField } from "../misc/miscComponents";
-import checkFundsAndSend from "../../utils/fundsManager";
-import { storePair, getImageUrls } from "../../utils/dbUtil"
-import ReactLoading from "react-loading";
-import { State, DescriptionContext } from "../../contexts/DescriptionContext/DescriptionContext";
-import { OptionsContext } from "../../contexts/OptionsContext/OptionsContext";
-import { toast } from "react-toastify";
+import { CheckBox, NumberInput, TextField } from "../misc/miscComponents";
+import ProgressBar from "../progressBar/ProgressBar";
+import "./Description.css";
 
 const INSTRUCTION = "Describe the image in detail.";
-const IMAGES_PER_PAGE = 48;
 
 
 function parseTextArea(imageUrls) {
@@ -70,10 +70,23 @@ async function send(data) {
 
     const pool = [];
 
+    let totalSpent = data.cashSpentThisSession; // totalSpent should have the latest value of the cashSpentThisSession because of run-to-completion.
+
     const processImage = async (i) => {
         if (data.states[i] !== State.PENDING && data.states[i] !== State.FAILURE) {
             return;
         }
+
+        const estimatedPrice = estimateGPT4VPrice(data.highRes ? Detail.HIGH : Detail.LOW);
+        if (totalSpent + estimatedPrice > data.cashLimitThisSession) {
+            return;
+        }
+
+        data.setCashSpentThisSession(prev => { 
+            const spent = prev + estimatedPrice;
+            totalSpent = spent;
+            return spent;
+        });
 
         const imageUrl = data.images[i];
 
@@ -87,6 +100,12 @@ async function send(data) {
             const response = await checkFundsAndSend(calculateGPT4VPrice, sendGPT4VInstruction, [data.apiKey, imageUrl, INSTRUCTION, data.highRes ? Detail.HIGH : Detail.LOW]);
             const storeData = createStorePairData(INSTRUCTION, data.highRes, response);
 
+            data.setCashSpentThisSession(prev => { 
+                const spent = prev - estimatedPrice + calculateGPT4VPrice(response);
+                totalSpent = spent;
+                return spent;
+            });
+
             storePair(imageUrl, storeData);
 
             data.setStates(prevStates => {
@@ -96,6 +115,12 @@ async function send(data) {
             });
         } catch (error) {
             console.error("Error occurred in sendGPT4VInstruction:", error);
+
+            data.setCashSpentThisSession(prev => { 
+                const spent = prev - estimatedPrice;
+                totalSpent = spent;
+                return spent;
+            });
 
             data.setStates(prevStates => {
                 const newStates = [...prevStates];
@@ -144,6 +169,9 @@ function Method({ data }) {
                         className="rounded-corners margin-no-top"
                         type="number"
                         placeholder="Number of images"
+                        min="1"
+                        max="10000"
+                        disabled={data.isSendDisabled}
                         onBlur={async (e) => {
                             if (prevNumImages.current == e.target.value) {
                                 return;
@@ -163,9 +191,47 @@ function Method({ data }) {
                 </TabPanel>
                 <TabPanel>
                     <p className="margin-no-top">
-                        Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.
+                        Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.<br />
+                        <span class="nb-label">
+                            <span class="warning-icon"></span>
+                            The cost is approximated before we send the API request. As such, it might go over the limit by little.
+                        </span>
                     </p>
-                    <input className="rounded-corners margin-no-top" type="number" placeholder="Amount of money" min="0" step="0.01" />
+                    <input
+                        className="rounded-corners margin-no-top"
+                        type="number"
+                        placeholder="Amount of money"
+                        min="0"
+                        step="0.01"
+                        disabled={data.isSendDisabled}
+                        value={data.cashLimitThisSession}
+                        onChange={(e) => { data.setCashLimitThisSession(parseFloat(e.target.value)); }}
+                        onBlur={async (e) => {
+                            if (prevNumImages.current == 10000) {
+                                return;
+                            }
+
+                            try {
+                                prevNumImages.current = 10000;
+                                const image_urls = await getImageUrls(10000);
+
+                                data.setImages(image_urls);
+                                data.setStates(new Array(image_urls.length).fill(State.PENDING));
+                            } catch (error) {
+                                prevNumImages.current = null;
+                                toast.error(`Could not retrieve the image urls: ${error}`);
+                            }
+                        }} />
+                    {data.isSendDisabled && data.cashLimitThisSession &&
+                        <div className="margin-no-top go-button">
+                            <ProgressBar
+                                width='100%'
+                                ratio={Math.min(1.0, data.cashSpentThisSession / data.cashLimitThisSession)}
+                                barColor={'#77DD77'}
+                                text={`${data.cashSpentThisSession.toFixed(2)}/${data.cashLimitThisSession.toFixed(2)}`}
+                            />
+                        </div>
+                    }
                     <Options data={data} />
                 </TabPanel>
                 <TabPanel>
@@ -176,6 +242,7 @@ function Method({ data }) {
                         className="rounded-corners margin-no-top textarea long-textarea"
                         placeholder="Enter image URLs, separated by commas"
                         value={formattedUrls}
+                        disabled={data.isSendDisabled}
                         onChange={(e) => {
                             setFormattedUrls(e.target.value.replace(/,(?!\n)/gm, ",\n\n"));
                         }}
@@ -201,6 +268,7 @@ function Method({ data }) {
 
 function DescriptionBody() {
     const [isSendDisabled, setSendDisabled] = useState(false);
+    const IMAGES_PER_PAGE = 50 - (50 % Math.floor(window.innerWidth / 272)); // Trying to estimate before hand how many picture will fit perfectly.
 
     const {
         apiKey, setApiKey,
@@ -213,6 +281,8 @@ function DescriptionBody() {
         states, setStates,
         numThreads, setNumThreads,
         currentPage, setCurrentPage,
+        cashLimitThisSession, setCashLimitThisSession,
+        cashSpentThisSession, setCashSpentThisSession,
     } = useContext(DescriptionContext);
 
     const imagesToShow = images.slice(
@@ -227,7 +297,9 @@ function DescriptionBody() {
         highRes, setHighRes,
         maxTokens, setMaxTokens,
         numThreads, setNumThreads,
-        isSendDisabled, setSendDisabled
+        isSendDisabled, setSendDisabled,
+        cashLimitThisSession, setCashLimitThisSession,
+        cashSpentThisSession, setCashSpentThisSession,
     }
 
     return (

@@ -63,10 +63,10 @@ def delete_user():
     
 
 """
-POST request used to get the current user's info. It uses the session to get the email.
+GET request used to get the current user's info. It uses the session to get the email.
 """
 @bp.route("/user", methods=["GET"])
-@limiter.limit("30/minute")
+@limiter.limit("240/minute")
 def user():
     if not _is_authenticated():
         return "Invalid or expired session token", 401

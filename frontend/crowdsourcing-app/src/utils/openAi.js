@@ -25,6 +25,16 @@ export function calculateGPT4VPrice(response) {
     return outputCost + promptCost;
 }
 
+export function estimateGPT4VPrice(detail) {
+    if (detail === Detail.LOW) {
+        return 0.005;
+    } else if (detail === Detail.HIGH) {
+        return 0.015;
+    }
+
+    return 0.00;
+}
+
 export function getGPT4Vpayload(imageUrl, instruction, detail, maxtokens = 300) {
     const payload = {
         model: "gpt-4-vision-preview",
