@@ -42,6 +42,7 @@ export async function updateUser(data) {
     return result;
 }
 
+
 export async function deleteUser() {
     const response = await fetch(`http://localhost:5000/delete_user`, {
         method: "DELETE",
@@ -56,6 +57,21 @@ export async function deleteUser() {
     const result = await response.text();
     return result;
 }
+
+
+export async function getOrderedUsers() {
+    const response = await fetch("http://localhost:5000/get_ordered_users", {
+        method: "GET",
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    return await response.json();
+}
+
 
 export async function getCurrentUserInfo() {
     const response = await fetch("http://localhost:5000/user", {

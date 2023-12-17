@@ -12,6 +12,7 @@ import { InstructionProvider } from "./contexts/InstructionContext/InstructionCo
 import { OptionsProvider } from "./contexts/OptionsContext/OptionsContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Statistics from "./components/statistics/StatisticsComponent";
 
 function App() {
     return (
@@ -25,7 +26,7 @@ function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/instruction" element={<Instruction />} />
                     <Route path="/description" element={<Description />} />
-                    <Route path="/statistics" element={<Instruction />} />
+                    <Route path="/statistics" element={<Statistics />} />
                     <Route path="/settings" element={<Settings />} />
                 </Routes>
             </DescriptionProvider>
