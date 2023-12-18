@@ -6,6 +6,8 @@ from authenticationRoutes import _is_authenticated
 
 from tempStorage import archive_pages
 
+from utils.exportToDataset import export_to_git 
+
 MAX_IMAGES = 10000
 ARCHIVE_PAGE_PKS = "archive_page_pks"
 
@@ -88,6 +90,30 @@ def get_image_urls():
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
     
+
+"""
+POST requests the server to update the dataset and post it to huggingface
+"""
+@bp.route("/update_dataset", methods=["POST"])
+@limiter.limit("1/minute")
+def update_dataset():
+    try:
+        # This needs to be imported inside the request context.
+        from flask import current_app
+
+        db = current_app.config["db"]
+        pairs = db.get_all_pairs()
+
+        export_to_git(pairs)
+
+        return "Successfully updated dataset", 200
+
+    except BadRequest as e:
+        return str(e), 400
+
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+
 
 """
 Removes image_url from the stored pages of the user.

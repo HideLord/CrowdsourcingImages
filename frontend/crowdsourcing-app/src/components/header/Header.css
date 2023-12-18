@@ -1,6 +1,6 @@
 .App-header {
     background-color: #586683;
-    min-height: calc(20px + 3vmin);
+    height: calc(20px + 3vmin);
     display: flex;
     flex-direction: row;
     color: white;
@@ -25,4 +25,16 @@
 .link:hover {
     color: #e5fc93;
     font-size: 2.2vmin;
+}
+
+.logo-link {
+    display: flex;
+    margin: 5px 20px;
+    height: calc(100% - 10px);
+}
+
+.logo-link img {
+    height: 100%;
+    width: auto;
+    object-fit: scale-down;
 }

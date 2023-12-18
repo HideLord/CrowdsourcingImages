@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 
 class DBInterface(ABC):
     @abstractmethod
-    def store_pair(self, image_url: str, data):
+    def store_pair(self, image_url: str, data: dict):
+        pass
+
+    @abstractmethod
+    def get_all_pairs(self):
         pass
 
     @abstractmethod

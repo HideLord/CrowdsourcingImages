@@ -4,6 +4,7 @@ sys.path.insert(0, "./app")
 sys.path.insert(0, "./app/interfaces")
 sys.path.insert(0, "./app/implementations")
 sys.path.insert(0, "./app/routes")
+sys.path.insert(0, "./app/utils")
 
 from app import BackendApp
 from dbSQL import SQLDatabase 

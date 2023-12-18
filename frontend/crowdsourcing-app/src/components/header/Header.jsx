@@ -5,6 +5,7 @@ export default function Header() {
     return (
         <header className="App-header">
             <div className="sub-div">
+                <Link to="/about" className="logo-link"><img src="/logoNoText.svg"></img></Link>
                 <Link to="/instruction" className="link">Instruction 🛠️</Link>
                 <Link to="/description" className="link">Description 📝</Link>
                 <Link to="/statistics" className="link">Statistics 📊</Link>

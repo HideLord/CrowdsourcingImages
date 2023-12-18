@@ -1,13 +1,11 @@
 from interfaces.dbInterface import DBInterface
 from sqlalchemy import create_engine, Table, MetaData, Column, String, Integer, DateTime, Float, inspect, column, func
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.sql.expression import not_
 
-from json import dumps
-from typing import Union
 from tqdm import tqdm
 from threading import Lock
 from random import shuffle
+from datetime import datetime
 
 from tempStorage import archive_pks_in_use, archive_pages
 
@@ -41,7 +39,13 @@ class SQLDatabase(DBInterface):
             self.pairs_table = Table(SQLDatabase.PAIR_TABLE, metadata,
                                      Column("pk", Integer, primary_key=True, autoincrement=True),
                                      Column("image_url", String),
-                                     Column("json", String))
+                                     Column("creation_date", DateTime),
+                                     Column("type", String),
+                                     Column("instruction", String),
+                                     Column("detail", String),
+                                     Column("response", String),
+                                     Column("prompt_tokens", Integer),
+                                     Column("completion_tokens", Integer),)
             
         if ins.has_table(SQLDatabase.USER_TABLE):
             self.users_table = Table(SQLDatabase.USER_TABLE, metadata, autoload_with=self.engine)
@@ -180,17 +184,29 @@ class SQLDatabase(DBInterface):
                     archive_pages.pop(pk)
 
 
-    def store_pair(self, image_url: str, data: Union[str, dict, list]):
-        if data and image_url and isinstance(image_url, str):
-            if isinstance(data, (dict, list)):
-                data = dumps(data)
-            elif not isinstance(data, str):
-                raise TypeError(f"Unexpected json type {type(data)}.")
-        else:
-            raise TypeError("image_url and json must not be None.")
+    def store_pair(self, image_url: str, data: dict):
+        if not image_url or not isinstance(image_url, str):
+            raise ValueError("image_url must be a non-empty string.")
+        if not data or not isinstance(data, dict):
+            raise ValueError("data must be a non-empty dict.")
 
         with self.session.begin():
-            self.session.execute(self.pairs_table.insert().values(image_url=image_url, json=data))
+            self.session.execute(self.pairs_table.insert().values(
+                image_url=image_url,
+                creation_date=datetime.now(),
+                type=data.get("type", ""),
+                instruction=data.get("instruction", ""),
+                detail=data.get("detail", ""),
+                response=data.get("response", ""),
+                prompt_tokens=data.get("promptTokens", 0),
+                completion_tokens=data.get("completionTokens", 0),
+            ))
+
+
+    def get_all_pairs(self):
+        with self.session.begin():
+            rows = self.session.execute(self.pairs_table.select()).fetchall()
+            return [row._asdict() for row in rows]
 
 
     def create_user(self, email: str, username: str):

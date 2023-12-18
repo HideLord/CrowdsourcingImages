@@ -228,7 +228,7 @@ function Method({ data }) {
                                 The cost is approximated before sending the API request and then corrected. It might go over by a little.
                             </span>
                         </p>
-                        <label style={{marginLeft: '10px'}}>Cash Limit:
+                        <label style={{marginLeft: '10px'}}>Cost Limit:
                             <input
                                 className="rounded-corners margin-no-top"
                                 type="number"

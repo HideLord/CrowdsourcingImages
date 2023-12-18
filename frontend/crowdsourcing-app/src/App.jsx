@@ -15,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Statistics from "./components/statistics/Statistics";
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css'
+import About from "./components/about/About";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 <Header />
                 <Routes>
                     <Route path="/" element={<Login />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/instruction" element={<Instruction />} />
                     <Route path="/description" element={<Description />} />
                     <Route path="/statistics" element={<Statistics />} />
