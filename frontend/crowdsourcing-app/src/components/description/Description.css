@@ -76,16 +76,24 @@
 }
 
 .page-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 5px auto;
-    width: 10%;
-    min-width: 200px;
+    width: 250px;
 }
 
 .page-control button {
     border-radius: 5px;
-    margin-left: 10px;
-    width: 45%;
-    font-size: 18px;
+    margin: 0 1px;
+    width: 15%;
+}
+
+.page-control input {
+    border-radius: 5px;
+    margin: 0 1px;
+    width: 15%;
+    text-align: center;
 }
 
 .nb-label {

@@ -91,3 +91,7 @@
     background-color: #333;
     margin: 10px 0;
 }
+
+.tooltip {
+    z-index: 1001;
+}

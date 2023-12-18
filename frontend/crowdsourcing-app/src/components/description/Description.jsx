@@ -28,7 +28,7 @@ function Options({ data }) {
         <div className="row-div">
             <TextField
                 className="margin-no-top"
-                placeholder="Enter Your API KEY Here"
+                placeholder="Enter Your API Key Here"
                 value={data.apiKey}
                 onChange={e => data.setApiKey(e.target.value)}
             />
@@ -73,12 +73,12 @@ async function send(data) {
     let totalSpent = data.cashSpentThisSession; // totalSpent should have the latest value of the cashSpentThisSession because of run-to-completion.
 
     const processImage = async (i) => {
-        if (data.states[i] !== State.PENDING && data.states[i] !== State.FAILURE) {
+        if (data.images[i].state !== State.PENDING && data.images[i].state !== State.FAILURE) {
             return;
         }
 
         const estimatedPrice = estimateGPT4VPrice(data.highRes ? Detail.HIGH : Detail.LOW);
-        if (totalSpent + estimatedPrice > data.cashLimitThisSession) {
+        if (data.cashLimitThisSession && totalSpent + estimatedPrice > data.cashLimitThisSession) {
             return;
         }
 
@@ -88,12 +88,16 @@ async function send(data) {
             return spent;
         });
 
-        const imageUrl = data.images[i];
+        const imageUrl = data.images[i].url;
 
-        data.setStates(prevStates => {
-            const newStates = [...prevStates];
-            newStates[i] = State.SENDING;
-            return newStates;
+        data.setImages(prevImages => {
+            const updatedImages = [...prevImages];
+            updatedImages[i] = { 
+                ...updatedImages[i], 
+                state: State.SENDING,
+                tooltip: "Sending...",
+            };
+            return updatedImages;
         });
 
         try {
@@ -108,10 +112,14 @@ async function send(data) {
 
             storePair(imageUrl, storeData);
 
-            data.setStates(prevStates => {
-                const newStates = [...prevStates];
-                newStates[i] = State.SUCCESS;
-                return newStates;
+            data.setImages(prevImages => {
+                const updatedImages = [...prevImages];
+                updatedImages[i] = { 
+                    ...updatedImages[i], 
+                    state: State.SUCCESS,
+                    tooltip: response.choices[0].message.content,
+                };
+                return updatedImages;
             });
         } catch (error) {
             console.error("Error occurred in sendGPT4VInstruction:", error);
@@ -122,10 +130,14 @@ async function send(data) {
                 return spent;
             });
 
-            data.setStates(prevStates => {
-                const newStates = [...prevStates];
-                newStates[i] = State.FAILURE;
-                return newStates;
+            data.setImages(prevImages => {
+                const updatedImages = [...prevImages];
+                updatedImages[i] = { 
+                    ...updatedImages[i], 
+                    state: State.FAILURE,
+                    tooltip: error,
+                };
+                return updatedImages;
             });
         }
     };
@@ -150,7 +162,7 @@ async function send(data) {
 
 function Method({ data }) {
     const prevNumImages = useRef(data.numImages);
-    const [formattedUrls, setFormattedUrls] = useState(data.images.join(",\n\n"));
+    const [formattedUrls, setFormattedUrls] = useState(data.images.map(image => image.url).join(",\n\n"));
 
     return (
         <div className="margin">
@@ -183,8 +195,7 @@ function Method({ data }) {
                                 prevNumImages.current = e.target.value;
                                 const image_urls = await getImageUrls(e.target.value);
 
-                                data.setImages(image_urls);
-                                data.setStates(new Array(image_urls.length).fill(State.PENDING));
+                                data.setImages(image_urls.map(url => { return { url, state: State.PENDING, tooltip: url } }));
                             } catch (error) {
                                 toast.error(`Could not retrieve the image urls: ${error}`);
                             }
@@ -194,15 +205,15 @@ function Method({ data }) {
                 <TabPanel>
                     <p className="margin-no-top">
                         Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.<br />
-                        <span class="nb-label">
-                            <span class="warning-icon"></span>
+                        <span className="nb-label">
+                            <span className="warning-icon"></span>
                             The cost is approximated before we send the API request. As such, it might go over the limit by little.
                         </span>
                     </p>
                     <input
                         className="rounded-corners margin-no-top"
                         type="number"
-                        placeholder="Amount of money"
+                        placeholder="Amount of Money"
                         min="0"
                         step="0.01"
                         disabled={data.isSendDisabled}
@@ -234,8 +245,7 @@ function Method({ data }) {
                         }}
                         onBlur={(e) => {
                             const image_urls = parseTextArea(e.target.value);
-                            data.setImages(image_urls);
-                            data.setStates(new Array(image_urls.length).fill(State.PENDING));
+                            data.setImages(image_urls.map(url => { return { url, state: State.PENDING, tooltip: url } }));
                         }}>
                     </textarea>
                     <Options data={data} />
@@ -246,6 +256,66 @@ function Method({ data }) {
                 onClick={async () => send(data)}
                 disabled={data.isSendDisabled}>
                 Send
+            </button>
+        </div>
+    )
+}
+
+
+function Pagination({ data }) {
+    const pageChange = (e) => {
+        let page = parseInt(e.target.value);
+        if (page > Math.ceil(data.images.length / data.IMAGES_PER_PAGE)) {
+            page = Math.ceil(data.images.length / data.IMAGES_PER_PAGE);
+        }
+        if (page <= 0 || !page) {
+            page = 1;
+        }
+        data.setCurrentPage(page - 1);
+    };
+
+    return (
+        <div className="page-control">
+            <button
+                onClick={() => {
+                    data.setCurrentPage(0);
+                }}
+                disabled={data.currentPage === 0}
+            >
+                &lt;&lt;
+            </button>
+            <button
+                onClick={() => {
+                    data.setCurrentPage((prev) => (prev > 0 ? prev - 1 : 0));
+                }}
+                disabled={data.currentPage === 0}
+            >
+                &lt;
+            </button>
+            <input
+                className="page-number rounded-corners"
+                type="number"
+                min="0"
+                max={toString(Math.ceil(data.images.length / data.IMAGES_PER_PAGE))}
+                value={data.currentPage + 1}
+                onChange={pageChange}
+                onBlur={pageChange}
+            />
+            <button
+                onClick={() => {
+                    data.setCurrentPage((prev) => (prev + 1) < Math.ceil(data.images.length / data.IMAGES_PER_PAGE) ? prev + 1 : prev);
+                }}
+                disabled={data.currentPage >= Math.ceil(data.images.length / data.IMAGES_PER_PAGE) - 1}
+            >
+                &gt;
+            </button>
+            <button
+                onClick={() => {
+                    data.setCurrentPage(Math.ceil(data.images.length / data.IMAGES_PER_PAGE) - 1);
+                }}
+                disabled={data.currentPage >= Math.ceil(data.images.length / data.IMAGES_PER_PAGE) - 1}
+            >
+                &gt;&gt;
             </button>
         </div>
     )
@@ -264,7 +334,6 @@ function DescriptionBody() {
 
     const {
         images, setImages,
-        states, setStates,
         numThreads, setNumThreads,
         currentPage, setCurrentPage,
         cashLimitThisSession, setCashLimitThisSession,
@@ -277,14 +346,8 @@ function DescriptionBody() {
         (currentPage + 1) * IMAGES_PER_PAGE
     );
 
-    const statesToShow = states.slice(
-        currentPage * IMAGES_PER_PAGE,
-        (currentPage + 1) * IMAGES_PER_PAGE
-    );
-
     const data = {
         images, setImages,
-        states, setStates,
         apiKey, setApiKey,
         highRes, setHighRes,
         maxTokens, setMaxTokens,
@@ -293,39 +356,29 @@ function DescriptionBody() {
         cashLimitThisSession, setCashLimitThisSession,
         cashSpentThisSession, setCashSpentThisSession,
         numImages, setNumImages,
+        currentPage, setCurrentPage,
+        IMAGES_PER_PAGE
     }
 
     return (
         <div className="column-div hide-scrollbar">
             <Method data={data}></Method>
             <div className="column-div image-grid margin-no-top">
-                {imagesToShow.map((imageUrl, index) => (
-                    <div key={index} style={{ position: "relative" }}>
-                        {statesToShow[index] === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
-                        {statesToShow[index] === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
-                        {statesToShow[index] === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
-                        <Image imageUrl={imageUrl} imageClass="image-256" wrapperClass="image-wrapper" />
+                {imagesToShow.map(({ url, state, tooltip }, index) => (
+                    <div 
+                        key={url} 
+                        style={{ position: "relative" }} 
+                        data-tooltip-id="image-tooltip"
+                        data-tooltip-html={`<div style='max-width:320px; word-wrap:break-word;'>${tooltip}</div>`}
+                    >
+                        {state === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
+                        {state === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
+                        {state === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
+                        <Image imageUrl={url} imageClass="image-256" wrapperClass="image-wrapper" />
                     </div>
                 ))}
             </div>
-            <div className="page-control">
-                <button
-                    onClick={() => {
-                        setCurrentPage((prev) => (prev > 0 ? prev - 1 : 0));
-                    }}
-                    disabled={currentPage === 0}
-                >
-                    &lt;
-                </button>
-                <button
-                    onClick={() => {
-                        setCurrentPage((prev) => (prev + 1) < Math.ceil(data.images.length / IMAGES_PER_PAGE) ? prev + 1 : prev);
-                    }}
-                    disabled={currentPage >= Math.ceil(data.images.length / IMAGES_PER_PAGE) - 1}
-                >
-                    &gt;
-                </button>
-            </div>
+            <Pagination data={data} />
         </div >
     )
 }

@@ -13,6 +13,8 @@ import { OptionsProvider } from "./contexts/OptionsContext/OptionsContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Statistics from "./components/statistics/StatisticsComponent";
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css'
 
 function App() {
     return (
@@ -32,6 +34,7 @@ function App() {
             </DescriptionProvider>
             </InstructionProvider>
             </OptionsProvider>
+            <Tooltip id="image-tooltip" clickable className="tooltip"/>
         </div>
     );
 }

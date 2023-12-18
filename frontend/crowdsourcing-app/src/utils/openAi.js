@@ -27,9 +27,9 @@ export function calculateGPT4VPrice(response) {
 
 export function estimateGPT4VPrice(detail) {
     if (detail === Detail.LOW) {
-        return 0.005;
+        return 0.006;
     } else if (detail === Detail.HIGH) {
-        return 0.015;
+        return 0.018;
     }
 
     return 0.00;

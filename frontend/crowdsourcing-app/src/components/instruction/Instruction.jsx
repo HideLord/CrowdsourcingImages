@@ -130,7 +130,7 @@ function InstructionBody() {
                 <div className="row-div">
                     <TextField
                         className="margin-no-top"
-                        placeholder="Enter Your API KEY Here"
+                        placeholder="Enter Your API Key Here"
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
                     />
