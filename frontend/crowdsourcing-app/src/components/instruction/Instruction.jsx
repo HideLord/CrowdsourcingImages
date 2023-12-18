@@ -128,12 +128,14 @@ function InstructionBody() {
                     onChange={e => setInstruction(e.target.value)}
                 />
                 <div className="row-div">
-                    <TextField
-                        className="margin-no-top"
-                        placeholder="Enter Your API Key Here"
-                        value={apiKey}
-                        onChange={e => setApiKey(e.target.value)}
-                    />
+                    <label style={{marginLeft: '10px'}}>API Key:
+                        <TextField
+                            className="margin-no-top"
+                            placeholder="Enter Your API Key Here"
+                            value={apiKey}
+                            onChange={e => setApiKey(e.target.value)}
+                        />
+                    </label>
                     <NumberInput
                         label="Max Tokens:"
                         value={maxTokens}

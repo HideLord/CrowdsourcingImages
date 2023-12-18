@@ -21,14 +21,14 @@ export function NumberInput({ label, value, onChange }) {
 
 export function CheckBox({ checked, onChange, label }) {
     return (
-        <label>
+        <label style={{marginLeft: '10px'}}>
+            {label}
             <input
                 className="margin-no-top"
                 type="checkbox"
                 checked={checked}
                 onChange={onChange}
             />
-            {label}
         </label>
     )
 }

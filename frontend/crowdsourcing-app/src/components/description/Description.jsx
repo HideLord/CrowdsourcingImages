@@ -25,13 +25,14 @@ function parseTextArea(imageUrls) {
 
 function Options({ data }) {
     return (
-        <div className="row-div">
-            <TextField
-                className="margin-no-top"
-                placeholder="Enter Your API Key Here"
-                value={data.apiKey}
-                onChange={e => data.setApiKey(e.target.value)}
-            />
+        <div className="options-div">
+            <label style={{marginLeft: '10px'}}>API Key:
+                <TextField
+                    placeholder="Enter Your API Key Here"
+                    value={data.apiKey}
+                    onChange={e => data.setApiKey(e.target.value)}
+                />
+            </label>
             <NumberInput
                 label="Threads:"
                 value={data.numThreads}
@@ -160,6 +161,16 @@ async function send(data) {
     data.setSendDisabled(false);
 }
 
+function SendButton({ data }) {
+    return (
+        <button
+            className="blue-button margin-no-top go-button"
+            onClick={async () => send(data)}
+            disabled={data.isSendDisabled}>
+            Send
+        </button>
+    )
+}
 
 function Method({ data }) {
     const prevNumImages = useRef(data.numImages);
@@ -175,89 +186,97 @@ function Method({ data }) {
                 </TabList>
 
                 <TabPanel>
-                    <p className="margin-no-top">
-                        Enter the number of images you'd like to caption, and the system will auto-choose them for you.
-                    </p>
-                    <input
-                        className="rounded-corners margin-no-top"
-                        type="number"
-                        placeholder="Number of images"
-                        min="1"
-                        max="10000"
-                        disabled={data.isSendDisabled}
-                        value={data.numImages}
-                        onChange={(e) => { data.setNumImages(e.target.value); }}
-                        onBlur={async (e) => {
-                            if (prevNumImages.current == e.target.value) {
-                                return;
-                            }
+                    <div className="tab-panel">
+                        <p className="margin-no-top">
+                            Enter the number of images you'd like to caption, and the system will auto-choose them for you.
+                        </p>
+                        <label style={{marginLeft: '10px'}}>Image Count:
+                            <input
+                                className="rounded-corners margin-no-top"
+                                type="number"
+                                placeholder="Number of images"
+                                min="1"
+                                max="10000"
+                                disabled={data.isSendDisabled}
+                                value={data.numImages}
+                                onChange={(e) => { data.setNumImages(e.target.value); }}
+                                onBlur={async (e) => {
+                                    if (prevNumImages.current == e.target.value) {
+                                        return;
+                                    }
 
-                            try {
-                                prevNumImages.current = e.target.value;
-                                const image_urls = await getImageUrls(e.target.value);
+                                    try {
+                                        prevNumImages.current = e.target.value;
+                                        const image_urls = await getImageUrls(e.target.value);
 
+                                        data.setImages(image_urls.map(url => { return { url, state: State.PENDING, tooltip: url } }));
+                                    } catch (error) {
+                                        toast.error(`Could not retrieve the image urls: ${error}`);
+                                    }
+                                }} />
+                            </label>
+                        <Options data={data} />
+                        <SendButton data={data} />
+                    </div>
+                </TabPanel>
+                <TabPanel>
+                    <div className="tab-panel">
+                        <p className="margin-no-top">
+                            Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.<br />
+                            <span className="nb-label rounded-corners">
+                                <span className="warning-icon"></span>
+                                The cost is approximated before sending the API request and then corrected. It might go over by a little.
+                            </span>
+                        </p>
+                        <label style={{marginLeft: '10px'}}>Cash Limit:
+                            <input
+                                className="rounded-corners margin-no-top"
+                                type="number"
+                                placeholder="Amount of Money"
+                                min="0"
+                                step="0.01"
+                                disabled={data.isSendDisabled}
+                                value={data.cashLimitThisSession}
+                                onChange={(e) => { data.setCashLimitThisSession(parseFloat(e.target.value)); }} />
+                        </label>
+
+                        {data.isSendDisabled && data.cashLimitThisSession &&
+                            <div className="margin-no-top go-button">
+                                <ProgressBar
+                                    width="100%"
+                                    ratio={Math.min(1.0, data.cashSpentThisSession / data.cashLimitThisSession)}
+                                    barColor={"#77DD77"}
+                                    text={`${data.cashSpentThisSession.toFixed(2)}/${data.cashLimitThisSession.toFixed(2)}`}
+                                />
+                            </div>
+                        }
+                        <Options data={data} />
+                        <SendButton data={data} />
+                    </div>
+                </TabPanel>
+                <TabPanel>
+                    <div className="tab-panel">
+                        <p className="margin-no-top">
+                            Enter comma-separated image URLs into the textbox below.
+                        </p>
+                        <textarea
+                            className="rounded-corners margin-no-top textarea long-textarea"
+                            placeholder="Enter image URLs, separated by commas"
+                            value={formattedUrls}
+                            disabled={data.isSendDisabled}
+                            onChange={(e) => {
+                                setFormattedUrls(e.target.value.replace(/,(?!\n)/gm, ",\n\n"));
+                            }}
+                            onBlur={(e) => {
+                                const image_urls = parseTextArea(e.target.value);
                                 data.setImages(image_urls.map(url => { return { url, state: State.PENDING, tooltip: url } }));
-                            } catch (error) {
-                                toast.error(`Could not retrieve the image urls: ${error}`);
-                            }
-                        }} />
-                    <Options data={data} />
-                </TabPanel>
-                <TabPanel>
-                    <p className="margin-no-top">
-                        Enter the amount of money you'd like to spend captioning images, and the system will automatically caption images until it hits the limit.<br />
-                        <span className="nb-label">
-                            <span className="warning-icon"></span>
-                            The cost is approximated before we send the API request. As such, it might go over the limit by little.
-                        </span>
-                    </p>
-                    <input
-                        className="rounded-corners margin-no-top"
-                        type="number"
-                        placeholder="Amount of Money"
-                        min="0"
-                        step="0.01"
-                        disabled={data.isSendDisabled}
-                        value={data.cashLimitThisSession}
-                        onChange={(e) => { data.setCashLimitThisSession(parseFloat(e.target.value)); }} />
-                    {data.isSendDisabled && data.cashLimitThisSession &&
-                        <div className="margin-no-top go-button">
-                            <ProgressBar
-                                width="100%"
-                                ratio={Math.min(1.0, data.cashSpentThisSession / data.cashLimitThisSession)}
-                                barColor={"#77DD77"}
-                                text={`${data.cashSpentThisSession.toFixed(2)}/${data.cashLimitThisSession.toFixed(2)}`}
-                            />
-                        </div>
-                    }
-                    <Options data={data} />
-                </TabPanel>
-                <TabPanel>
-                    <p className="margin-no-top">
-                        Enter comma-separated image URLs into the textbox below.
-                    </p>
-                    <textarea
-                        className="rounded-corners margin-no-top textarea long-textarea"
-                        placeholder="Enter image URLs, separated by commas"
-                        value={formattedUrls}
-                        disabled={data.isSendDisabled}
-                        onChange={(e) => {
-                            setFormattedUrls(e.target.value.replace(/,(?!\n)/gm, ",\n\n"));
-                        }}
-                        onBlur={(e) => {
-                            const image_urls = parseTextArea(e.target.value);
-                            data.setImages(image_urls.map(url => { return { url, state: State.PENDING, tooltip: url } }));
-                        }}>
-                    </textarea>
-                    <Options data={data} />
+                            }}>
+                        </textarea>
+                        <Options data={data} />
+                        <SendButton data={data} />
+                    </div>
                 </TabPanel>
             </Tabs>
-            <button
-                className="blue-button margin-no-top go-button"
-                onClick={async () => send(data)}
-                disabled={data.isSendDisabled}>
-                Send
-            </button>
         </div>
     )
 }
@@ -369,7 +388,7 @@ function DescriptionBody() {
     return (
         <div className="column-div hide-scrollbar">
             <Method data={data}></Method>
-            <div className="column-div image-grid margin-no-top">
+            <div className="column-div image-grid margin">
                 {imagesToShow.map(({ url, state, tooltip }, index) => (
                     <div
                         key={url}

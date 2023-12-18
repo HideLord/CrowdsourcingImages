@@ -1,3 +1,14 @@
+.tab-panel {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    max-width: 700px;
+    width: 100%;
+    margin: 20px auto;
+}
+
 .image-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(auto, 256px));
@@ -27,16 +38,17 @@
 }
 
 .long-textarea {
-    width: 80vw;
-    max-width: 650px;
     padding: 5px;
 }
 
 .go-button {
-    width: calc(80vw + 14px);
     border-radius: 5px;
-    max-width: 664px;
-    /*650px + 5 + 5 + 2 + 2 (the body + padding + border of the long text area)*/
+}
+
+.options-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .sending-spinner {
@@ -113,7 +125,7 @@
     padding: 5px 10px;
     background-color: #fffaa0;
     color: black;
-    border-radius: 5px;
+    margin-top: 10px;
     font-family: Arial, sans-serif;
 }
 
