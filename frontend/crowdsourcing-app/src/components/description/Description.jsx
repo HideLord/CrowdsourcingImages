@@ -92,8 +92,8 @@ async function send(data) {
 
         data.setImages(prevImages => {
             const updatedImages = [...prevImages];
-            updatedImages[i] = { 
-                ...updatedImages[i], 
+            updatedImages[i] = {
+                ...updatedImages[i],
                 state: State.SENDING,
                 tooltip: "Sending...",
             };
@@ -114,8 +114,8 @@ async function send(data) {
 
             data.setImages(prevImages => {
                 const updatedImages = [...prevImages];
-                updatedImages[i] = { 
-                    ...updatedImages[i], 
+                updatedImages[i] = {
+                    ...updatedImages[i],
                     state: State.SUCCESS,
                     tooltip: response.choices[0].message.content,
                 };
@@ -132,8 +132,8 @@ async function send(data) {
 
             data.setImages(prevImages => {
                 const updatedImages = [...prevImages];
-                updatedImages[i] = { 
-                    ...updatedImages[i], 
+                updatedImages[i] = {
+                    ...updatedImages[i],
                     state: State.FAILURE,
                     tooltip: error,
                 };
@@ -325,6 +325,7 @@ function Pagination({ data }) {
 
 function DescriptionBody() {
     const [isSendDisabled, setSendDisabled] = useState(false);
+    const [showBinIcon, setShowBinIcon] = useState(-1);
     const IMAGES_PER_PAGE = 50 - (50 % Math.floor(window.innerWidth / 272)); // Trying to estimate before hand how many picture will fit perfectly.
 
     const {
@@ -342,10 +343,14 @@ function DescriptionBody() {
         numImages, setNumImages,
     } = useContext(DescriptionContext);
 
-    const imagesToShow = images.slice(
-        currentPage * IMAGES_PER_PAGE,
-        (currentPage + 1) * IMAGES_PER_PAGE
-    );
+    const getImagesToShow = () => {
+        return images.slice(
+            currentPage * IMAGES_PER_PAGE,
+            (currentPage + 1) * IMAGES_PER_PAGE
+        );
+    }
+
+    let imagesToShow = getImagesToShow();
 
     const data = {
         images, setImages,
@@ -366,15 +371,31 @@ function DescriptionBody() {
             <Method data={data}></Method>
             <div className="column-div image-grid margin-no-top">
                 {imagesToShow.map(({ url, state, tooltip }, index) => (
-                    <div 
-                        key={url} 
-                        style={{ position: "relative" }} 
+                    <div
+                        key={url}
+                        style={{ position: "relative" }}
                         data-tooltip-id="image-tooltip"
                         data-tooltip-html={`<div style='max-width:320px; word-wrap:break-word;'>${tooltip}</div>`}
+                        onMouseEnter={() => setShowBinIcon(index)}
+                        onMouseLeave={() => setShowBinIcon(-1)}
                     >
                         {state === State.SENDING && <><div className="overlay" /><div className="sending-spinner"><ReactLoading type={"spin"} color={"DarkSeaGreen"} height={50} width={50} /></div></>}
                         {state === State.SUCCESS && <><div className="overlay" /><div className="check"><label>✔️</label></div></>}
                         {state === State.FAILURE && <><div className="overlay" /><div className="cross"><label>❌</label></div></>}
+                        {
+                            (state === State.FAILURE || state === State.PENDING) && showBinIcon === index &&
+                            <img
+                                src="/bin.png"
+                                alt="delete"
+                                className="bin"
+                                onClick={() => {
+                                    const newImages = [...images];
+                                    newImages.splice(index + IMAGES_PER_PAGE * currentPage, 1);
+                                    setImages(newImages);
+                                    imagesToShow = getImagesToShow();
+                                }}
+                            />
+                        }
                         <Image imageUrl={url} imageClass="image-256" wrapperClass="image-wrapper" />
                     </div>
                 ))}

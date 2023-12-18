@@ -34,7 +34,13 @@ export function DescriptionProvider({ children }) {
         getImage("https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fimages6.fanpop.com%2Fimage%2Fphotos%2F35200000%2FDog-dogs-35247719-3706-2480.jpg&f=1&nofb=1&ipt=885934226f08429e0a7b44ad23f9070018dc05ae326e0c50ee1babf6b79cb124&ipo=images",State.PENDING),
         getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.nawpic.com%2Fmedia%2F2020%2Fcute-dog-nawpic-16-e1609618136426.jpg&f=1&nofb=1&ipt=9769483ca8c3a7c5089ae200f122d469ac363e5d22a8a0f30e7e242c68f9b72d&ipo=images",State.PENDING),
         getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpicjumbo.com%2Fwp-content%2Fuploads%2Fmaltese-dog-puppy-1570x1047.jpg&f=1&nofb=1&ipt=1dd619ac1ad0f0219ec7383a89cf4bd6bdfb58c3ecfc2ff252737161ed99ea33&ipo=images",State.PENDING),
+        getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages6.alphacoders.com%2F404%2Fthumb-1920-404483.jpg&f=1&nofb=1&ipt=b0940238ac4a9a38c95a5d7eb38ac9487a86aa8cf8e431614be7ec89def69e52&ipo=images",State.PENDING),
+        getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpapercave.com%2Fwp%2Fqdp94oF.jpg&f=1&nofb=1&ipt=dbef037dba6fc5b7a8799b9a902ea494b408a6d869658f926c10f2e5f6e0eaa7&ipo=images",State.PENDING),
+        getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2F3.bp.blogspot.com%2F-V5V45SGn7fw%2FURIkFyNL9vI%2FAAAAAAAAZBA%2FIvX597VxPaE%2Fs1600%2Fwww.cwildlife.blogspot.com%2B(6).jpg&f=1&nofb=1&ipt=63e48670c5a7dfdd716dde7c86ee0994ced7325f9037b8d526753f8a63fc3dae&ipo=images",State.PENDING),
+        getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpaperaccess.com%2Ffull%2F327871.jpg&f=1&nofb=1&ipt=1802a9b82d91c1b2d7014babce8fc5302594a8b59aa9dbf5eef1e7a7c0fc0d32&ipo=images",State.PENDING),
+        getImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fglobaltravelsblog.com%2Fwp-content%2Fuploads%2F2014%2F05%2FSoutheastern-Guide-Dogs-Puppy.jpg&f=1&nofb=1&ipt=4a36e59967a9e4f2375fdc886f076d37f4b8053d7f7a77a22a3842aa34ec1132&ipo=images",State.PENDING),
         getImage("https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.pixelstalk.net%2Fwp-content%2Fuploads%2F2016%2F04%2FGolden-retriever-dogs-high-definition-wallpapers.jpg&f=1&nofb=1&ipt=3470400555631c862452a0fcb43101926d12b5c7d040d365bc4b2a07513277f3&ipo=images",State.PENDING),
+    
     ]);
     const [numThreads, setNumThreads] = useState(8);
     const [currentPage, setCurrentPage] = useState(0);

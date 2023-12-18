@@ -48,4 +48,5 @@
     margin-left: 15px;
     cursor: pointer;
     font-weight: bold;
+    user-select: none;
 }
