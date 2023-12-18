@@ -1,15 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import useOrderedUsers from "../../hooks/orderedUsersHook";
 import CenteredSpinner from "../centeredSpinner/CenteredSpinner";
 
-import "./StatisticsComponent.css";
 import "../../App.css";
+import "./Statistics.css";
+
+function OrderChoice({ column, order, setOrder, users, setUsers }) {
+    const sortUsers = (users, column, dir) => {
+        const sortedUsers = [...users];
+
+        sortedUsers.sort((a, b) => {
+            if (a[column] < b[column]) {
+                return dir === 'asc' ? -1 : 1;
+            }
+            if (a[column] > b[column]) {
+                return dir === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+
+        return sortedUsers;
+    };
+
+    return (
+        <span 
+            className="order-arrows"
+            onClick={(e) => {
+                const newOrder = {
+                    column,
+                    dir: order.dir,
+                };
+                
+                if (column === order.column) {
+                    newOrder.dir = (order.dir === 'desc' ? 'asc' : 'desc')
+                }
+
+                setOrder(newOrder);
+                setUsers(sortUsers(users, column, newOrder.dir));
+            }}
+        >
+            ↑↓
+        </span>
+    );
+}
 
 export default function Statistics() {
-    const [isLoading, users] = useOrderedUsers();
+    const [isLoading, users, setUsers] = useOrderedUsers();
+    const [order, setOrder] = useState({
+        column: 'cash_spent',
+        dir: 'desc',
+    });
 
     if (isLoading) {
-        return <CenteredSpinner />;
+        return (<CenteredSpinner />);
     }
 
     const columns = [
@@ -61,6 +104,13 @@ export default function Statistics() {
                         {columns.map((column, index) => (
                             <th key={index}>
                                 {columnNames[column]}
+                                <OrderChoice 
+                                    column={column}
+                                    order={order}
+                                    setOrder={setOrder}
+                                    users={users}
+                                    setUsers={setUsers}
+                                />
                             </th>
                         ))}
                     </tr>

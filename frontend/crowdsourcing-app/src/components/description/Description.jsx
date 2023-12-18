@@ -156,6 +156,7 @@ async function send(data) {
 
     await Promise.all(pool);
 
+    data.setCashSpentThisSession(0.00);
     data.setSendDisabled(false);
 }
 
